@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Until 1.0.0, minor versions may carry breaking changes to `@open-rocket-chat/api-contract`; a contract change lands here together with a matching pull request in [open-rocket-chat-client](https://github.com/zscontributor/open-rocket-chat-client).
 
+## [0.1.1] — 2026-08-02
+
+A file upload of any real size failed against a Rocket.Chat that is not on localhost, and a cancelled upload landed in the room anyway. Pairs with **client 0.1.1**. No change to `@open-rocket-chat/api-contract`.
+
+### Fixed
+
+- **Uploads no longer share the ordinary request timeout.** Every call to Rocket.Chat was capped at 15s, uploads included — but how long an upload takes is a property of the file's size and of the link, not of how healthy the server is. Against a real remote server at ~2.2 MB/s a 40 MB file landed in 12.6s and a 60 MB file failed at 15.2s, reported to the user as `upstream_unavailable` — "the Rocket.Chat server is not responding" — about a server that was answering perfectly well. Uploading the same file straight into Rocket.Chat worked, because a browser applies no such cap. File-carrying requests now get their own window: `UPLOAD_TIMEOUT_SECONDS`, defaulting to 300s, which is the largest upload `MAX_UPLOAD_BYTES` admits at roughly 350 KB/s. Ordinary calls keep their 15s, so a server that has genuinely stopped answering still fails fast
+- **Cancelling an upload now reaches Rocket.Chat.** Aborting in the browser only cancelled the browser's own request; the gateway already held the bytes and carried on, so a file taken back mid-upload appeared in the room seconds after the sender had let go of it. The client disconnecting now aborts the upstream call, through both legs of the two-phase upload
+- Message fields sent after the file in a multipart request — a caption, most often — are read once the file has gone up, so they land whichever order a client writes them in
+
+### Changed
+
+- **An upload is relayed as it arrives rather than collected first.** Rocket.Chat receives the file while the browser is still sending it, so the upload costs the slower of the two legs rather than their sum, and the gateway no longer holds an entire file per upload in flight — previously bounded only by how many people upload at once. `FormData` cannot carry a stream, so the multipart body is now written directly
+- **The upload route is detected before the file is read, not by spending it on the attempt.** A streamed body cannot be sent twice, so the old "try `rooms.media`, fall back to `rooms.upload` on a 404" probe is gone: by the time the first attempt fails the bytes are spent. A request carrying no file settles it instead — Rocket.Chat answers `error-no-file` where the route exists and `unknown-endpoint` where it does not, and stores nothing either way. Still cached per server, so it costs one request per server per process
+
+### Notes for operators
+
+- `UPLOAD_TIMEOUT_SECONDS` is new and optional; the 300s default suits `MAX_UPLOAD_BYTES` at its own default of 100 MB. Raise both together, or raise the timeout alone when the Rocket.Chat server is far enough away that a large upload cannot finish inside the window
+- Uploads now reach Rocket.Chat with `Transfer-Encoding: chunked` and no `Content-Length`. Verified against a self-hosted Rocket.Chat 8.6 and against a deployment behind a CDN; a reverse proxy in front of Rocket.Chat that refuses chunked request bodies would need configuring
+
+### Known limitation
+
+A browser's upload progress can only measure the browser-to-gateway leg. Neither undici's `fetch` nor `node:https` propagates TLS socket backpressure at these sizes — both accept roughly 17 MB of a 20 MB file at 30 MB/s — so streaming does not make a sender's progress track the gateway-to-Rocket.Chat leg. Where the gateway sits near Rocket.Chat, which is the deployment this is built for, that leg is short and the measurement is sound.
+
 ## [0.1.0] — 2026-08-02
 
 First public release. A backend-for-frontend that fronts a [Rocket.Chat](https://rocket.chat) server with a small, stable, version-independent API — plus the TypeScript SDK it is built from. It keeps the Rocket.Chat auth token server-side and hands the browser an opaque `HttpOnly` session cookie instead, absorbs upstream API churn behind a versioned contract, and normalises Rocket.Chat's Meteor-shaped records once so no client has to.
@@ -73,4 +97,5 @@ These are not meant to run in a browser holding real credentials — that puts a
 
 MIT © [Z-SOFT Co., Ltd.](https://z-soft.com.vn) The whole production dependency tree is 92 packages under permissive terms only — no copyleft licence appears in what you deploy.
 
+[0.1.1]: https://github.com/zscontributor/open-rocket-chat-gateway/releases/tag/v0.1.1
 [0.1.0]: https://github.com/zscontributor/open-rocket-chat-gateway/releases/tag/v0.1.0

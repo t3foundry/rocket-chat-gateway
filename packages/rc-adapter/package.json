@@ -1,6 +1,6 @@
 {
   "name": "@open-rocket-chat/rc-adapter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Normalises Rocket.Chat wire records into the Open Rocket.Chat domain model",
   "license": "MIT",
   "repository": {

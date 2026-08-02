@@ -1,6 +1,6 @@
 {
   "name": "open-rocket-chat-gateway",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Backend-for-frontend gateway and TypeScript SDK for Rocket.Chat-compatible servers",
   "license": "MIT",
