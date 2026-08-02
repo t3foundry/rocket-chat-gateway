@@ -1,6 +1,6 @@
 {
   "name": "@open-rocket-chat/rc-realtime-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Rocket.Chat realtime (DDP over WebSocket) client with reconnect and subscription recovery",
   "license": "MIT",
   "repository": {
