@@ -1,6 +1,6 @@
 {
   "name": "@open-rocket-chat/gateway",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Backend-for-frontend that fronts a Rocket.Chat server with a stable, version-independent API",
   "license": "MIT",

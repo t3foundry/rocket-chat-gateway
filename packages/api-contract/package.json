@@ -1,6 +1,6 @@
 {
   "name": "@open-rocket-chat/api-contract",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Transport-agnostic domain models, HTTP contract and realtime event schemas shared by the Open Rocket.Chat gateway and clients",
   "license": "MIT",
   "repository": {

@@ -32,6 +32,7 @@ export class FilesController {
     @CurrentSession() session: ServerSession,
     @Param('roomId') roomId: string,
     @Req() request: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply,
   ): Promise<UploadFileResponse> {
     const part = await request.file();
 
@@ -39,11 +40,17 @@ export class FilesController {
       throw ApiException.localized('bad_request', 'multipartFileRequired');
     }
 
-    // Buffered rather than streamed: Rocket.Chat's upload route needs a known
-    // content length, and the size ceiling is already enforced by the
-    // multipart limits configured at boot.
-    const content = await part.toBuffer();
+    // The browser going away has to reach Rocket.Chat, or a file the sender
+    // took back mid-upload still lands in the room seconds later — the
+    // gateway would otherwise carry on posting a message nobody is waiting
+    // for. The size ceiling stays with the multipart limits set at boot.
+    const abandoned = new AbortController();
+    reply.raw.on('close', () => {
+      if (!reply.raw.writableFinished) abandoned.abort();
+    });
 
+    // Read before the file, because reading the file is what makes the rest of
+    // the request arrive: any part sent after it is unparsed at this point.
     const fields = part.fields as Record<string, { value?: unknown } | undefined>;
     const description = readField(fields, 'description');
     const text = readField(fields, 'text');
@@ -56,16 +63,36 @@ export class FilesController {
         roomId,
         filename: part.filename,
         contentType: part.mimetype,
-        content,
+        // Relayed as it arrives rather than collected first, so the two legs
+        // of the journey overlap: Rocket.Chat is receiving the file while the
+        // browser is still sending it, and the whole upload costs the slower
+        // of the two rather than their sum. Buffering also meant holding an
+        // entire file per upload in flight, with nothing bounding the total
+        // but the number of people uploading at once.
+        content: part.file,
         ...(description ? { description } : {}),
         ...(text ? { text } : {}),
         ...(threadId ? { threadId } : {}),
+        signal: abandoned.signal,
+        // Parts sent after the file only become readable once it has been
+        // drained, which is after the bytes are already on their way up.
+        lateFields: () => ({
+          description: readField(fields, 'description'),
+          text: readField(fields, 'text'),
+          threadId: readField(fields, 'threadId'),
+        }),
       });
 
       this.rocketChat.rememberUploadStrategy(session.serverId, client);
 
       return toMessage(message, this.rocketChat.adapterContext(session));
     } catch (error) {
+      // Nobody is left to answer, and the abort was deliberate — reporting it
+      // as an upstream failure would only fill the log with noise.
+      if (abandoned.signal.aborted) {
+        throw ApiException.localized('bad_request', 'uploadAbandoned');
+      }
+
       throw toApiException(error);
     }
   }
