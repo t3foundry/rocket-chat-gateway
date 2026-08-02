@@ -1,0 +1,24 @@
+# Build context for `docker/gateway.Dockerfile`, which is this repository root.
+# The image installs and compiles from source, so everything generated locally
+# is dead weight — and `.env` would be a secret baked into a layer.
+
+node_modules
+**/node_modules
+dist
+**/dist
+.turbo
+**/.turbo
+coverage
+**/coverage
+.git
+.github
+.vscode
+.idea
+*.log
+.DS_Store
+
+# `**/` matters: the gateway's own env file is at apps/gateway/.env, and a
+# root-anchored `.env` would sail straight past it into a layer.
+**/.env
+**/.env.*
+!**/.env.example
