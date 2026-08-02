@@ -1,0 +1,52 @@
+{
+  "name": "open-rocket-chat-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Backend-for-frontend gateway and TypeScript SDK for Rocket.Chat-compatible servers",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zscontributor/open-rocket-chat-gateway.git"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "packageManager": "pnpm@10.28.2",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "eslint .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "rc:up": "docker compose -f docker/rocketchat.compose.yml up -d",
+    "rc:down": "docker compose -f docker/rocketchat.compose.yml down",
+    "rc:logs": "docker compose -f docker/rocketchat.compose.yml logs -f rocketchat",
+    "lint:fix": "eslint . --fix"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "globals": "^17.8.0",
+    "prettier": "^3.9.6",
+    "turbo": "^2.10.8",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.65.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@swc/core",
+      "unrs-resolver"
+    ],
+    "overridesComment": "fastify: two copies make Fastify plugin type augmentations land on a different FastifyInstance than the one @nestjs/platform-fastify passes to register(), so every plugin fails to typecheck. find-my-way: GHSA-c96f-x56v-gq3h (high) affects <=9.6.0, which @nestjs/platform-fastify still resolves transitively; pinned forward until it ships a fixed range.",
+    "overrides": {
+      "fastify": "5.11.0",
+      "find-my-way": "^9.7.0"
+    }
+  }
+}

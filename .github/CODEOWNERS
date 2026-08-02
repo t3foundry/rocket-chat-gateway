@@ -1,0 +1,12 @@
+# Every pull request needs a review from a maintainer before it can be merged.
+# Branch protection on `main` and `develop` requires a code owner's approval,
+# which is what stops a contributor from merging their own work.
+#
+# See CONTRIBUTING.md — "Branching model".
+
+* @zscontributor
+
+# The shared contract is consumed by open-rocket-chat-client. Changing it breaks
+# that repository, so it is called out separately rather than left to a reviewer
+# to notice.
+/packages/api-contract/ @zscontributor

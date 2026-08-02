@@ -1,0 +1,117 @@
+# The full backend stack: Rocket.Chat, its database, Redis, and the gateway.
+#
+# `rocketchat.compose.yml` is the lighter option when you only want Rocket.Chat
+# and intend to run the gateway from source with `pnpm dev`.
+#
+#   docker compose -f docker/stack.compose.yml up -d --build
+#
+# The web client is a separate repository; point its `VITE_GATEWAY_URL` at
+# http://localhost:4000, or serve it from the same origin behind a proxy.
+name: open-rocket-chat-stack
+
+services:
+  mongodb:
+    image: mongo:8.0
+    restart: unless-stopped
+    # Rocket.Chat requires a replica set even with a single node: it tails the
+    # oplog for realtime updates, and standalone mongod has no oplog.
+    command: mongod --replSet rs0 --bind_ip_all --oplogSize 128
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  mongo-init-replica:
+    image: mongo:8.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: 'no'
+    # Idempotent, so `up` can be run repeatedly without wiping the set.
+    command: >
+      mongosh --host mongodb:27017 --quiet --eval
+      "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}) }"
+
+  rocketchat:
+    image: rocketchat/rocket.chat:${RC_VERSION:-8.6.1}
+    restart: unless-stopped
+    depends_on:
+      mongo-init-replica:
+        condition: service_completed_successfully
+    environment:
+      MONGO_URL: mongodb://mongodb:27017/rocketchat?replicaSet=rs0
+      MONGO_OPLOG_URL: mongodb://mongodb:27017/local?replicaSet=rs0
+      ROOT_URL: ${RC_ROOT_URL:-http://localhost:3000}
+      PORT: '3000'
+      DEPLOY_METHOD: docker
+      ADMIN_USERNAME: ${RC_ADMIN_USERNAME:-admin}
+      ADMIN_PASS: ${RC_ADMIN_PASSWORD:-admin-password-123}
+      ADMIN_EMAIL: ${RC_ADMIN_EMAIL:-admin@example.com}
+      OVERWRITE_SETTING_Show_Setup_Wizard: completed
+      OVERWRITE_SETTING_Register_Server: 'false'
+    ports:
+      - '${RC_PORT:-3000}:3000'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://localhost:3000/api/info',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Sessions are recoverable by signing in again, so durability is not worth
+    # the write amplification here.
+    command: redis-server --save '' --appendonly no
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/gateway.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      rocketchat:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      # Reached over the compose network, not through the published port.
+      ROCKETCHAT_SERVERS: >-
+        [{"id":"default","name":"Rocket.Chat","url":"http://rocketchat:3000","publicUrl":"${RC_ROOT_URL:-http://localhost:3000}"}]
+      # Override in production. A generated default would invalidate every
+      # session on restart, and a shared literal would be worse.
+      SESSION_SECRET: ${SESSION_SECRET:?set SESSION_SECRET, e.g. `openssl rand -base64 48`}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      REDIS_URL: redis://redis:6379
+      PORT: '4000'
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - '${GATEWAY_PORT:-4000}:4000'
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "require('http').get('http://localhost:4000/api/v1/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+volumes:
+  mongodb-data:

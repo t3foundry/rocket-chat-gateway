@@ -1,0 +1,71 @@
+# Local Rocket.Chat used for development and end-to-end tests.
+#
+# Not a production topology: the admin account is seeded from environment
+# variables and the setup wizard is skipped so a fresh `docker compose up`
+# yields a server you can log into immediately.
+name: open-rocket-chat-dev
+
+services:
+  mongodb:
+    image: mongo:8.0
+    restart: unless-stopped
+    # Rocket.Chat requires a replica set even with a single node: it tails the
+    # oplog for realtime updates, and standalone mongod has no oplog.
+    command: mongod --replSet rs0 --bind_ip_all --oplogSize 128
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  mongo-init-replica:
+    image: mongo:8.0
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    restart: 'no'
+    # Idempotent: re-running against an initialised set is a no-op, so the
+    # stack survives `docker compose up` being run repeatedly.
+    command: >
+      mongosh --host mongodb:27017 --quiet --eval
+      "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongodb:27017'}]}) }"
+
+  rocketchat:
+    image: rocketchat/rocket.chat:8.6.1
+    restart: unless-stopped
+    depends_on:
+      mongo-init-replica:
+        condition: service_completed_successfully
+    environment:
+      MONGO_URL: mongodb://mongodb:27017/rocketchat?replicaSet=rs0
+      MONGO_OPLOG_URL: mongodb://mongodb:27017/local?replicaSet=rs0
+      ROOT_URL: http://localhost:3000
+      PORT: '3000'
+      DEPLOY_METHOD: docker
+      # Seeds an admin on first boot so tests need no manual setup step.
+      ADMIN_USERNAME: ${RC_ADMIN_USERNAME:-admin}
+      ADMIN_PASS: ${RC_ADMIN_PASSWORD:-admin-password-123}
+      ADMIN_EMAIL: ${RC_ADMIN_EMAIL:-admin@example.com}
+      OVERWRITE_SETTING_Show_Setup_Wizard: completed
+      # Silences the first-run telemetry prompt in a throwaway environment.
+      OVERWRITE_SETTING_Register_Server: 'false'
+    ports:
+      - '${RC_PORT:-3000}:3000'
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "require('http').get('http://localhost:3000/api/info',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+      start_period: 60s
+
+volumes:
+  mongodb-data:
