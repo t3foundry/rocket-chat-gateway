@@ -62,6 +62,7 @@ export class RocketChatService {
     const client = new RocketChatRestClient({
       baseUrl: server.url,
       userAgent: GATEWAY_USER_AGENT,
+      uploadTimeoutMs: this.config.uploadTimeoutMs,
       onRetry: ({ attempt, delayMs, reason, path }) => {
         this.logger.warn({ serverId, attempt, delayMs, reason, path }, 'retrying Rocket.Chat request');
       },

@@ -13,6 +13,15 @@ export interface RestClientOptions {
   fetch?: typeof globalThis.fetch;
   /** Per-request timeout. Defaults to 15s. */
   timeoutMs?: number;
+  /**
+   * Timeout for requests that carry file bytes. Defaults to 5 minutes.
+   *
+   * Uploads are the one call whose duration is set by the payload rather than
+   * by how quickly Rocket.Chat answers, so the ordinary timeout is the wrong
+   * measure entirely: a 60 MB file to a server across the internet spends half
+   * a minute on the wire before the server has anything to respond to.
+   */
+  uploadTimeoutMs?: number;
   /** Retries for transient failures (429, 5xx, network). Defaults to 2. */
   maxRetries?: number;
   userAgent?: string;
@@ -28,6 +37,11 @@ export interface RequestOptions {
   body?: unknown;
   /** Sent as-is; the caller is responsible for the `Content-Type`. */
   formData?: FormData;
+  /**
+   * A body written by the caller and sent as it is produced, for payloads too
+   * large to hold. Never retried: the bytes are gone once read.
+   */
+  stream?: { contentType: string; body: AsyncIterable<Uint8Array> };
   credentials?: RocketChatCredentials;
   /** Merged over the client defaults; used for two-factor headers. */
   headers?: Record<string, string>;
@@ -41,10 +55,38 @@ export interface RequestOptions {
 }
 
 const DEFAULT_TIMEOUT_MS = 15_000;
+const DEFAULT_UPLOAD_TIMEOUT_MS = 300_000;
 const DEFAULT_MAX_RETRIES = 2;
 const API_PREFIX = '/api/v1';
 
 const isRetriableStatus = (status: number): boolean => status === 429 || status === 408 || status >= 500;
+
+/**
+ * Hand-rolled rather than `ReadableStream.from`, which arrived too late to
+ * assume: this package is also consumed by a browser build.
+ *
+ * One chunk is pulled per request, so the source only produces as fast as the
+ * socket drains it. That backpressure is the point — without it a gateway
+ * forwarding an upload would read the whole file into memory regardless of how
+ * slowly the far end accepts it.
+ */
+const toReadableStream = (source: AsyncIterable<Uint8Array>): ReadableStream<Uint8Array> => {
+  const iterator = source[Symbol.asyncIterator]();
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      const { done, value } = await iterator.next();
+      if (done) {
+        controller.close();
+        return;
+      }
+      controller.enqueue(value);
+    },
+    async cancel(reason) {
+      await iterator.return?.(reason);
+    },
+  });
+};
 
 const jitteredBackoff = (attempt: number): number => {
   const base = Math.min(2 ** attempt * 250, 4_000);
@@ -85,6 +127,15 @@ export class RocketChatHttp {
 
   get serverUrl(): string {
     return this.baseUrl;
+  }
+
+  /**
+   * The window a file-carrying request is given. Exposed so the two-phase
+   * upload can put its second leg — which carries no bytes of its own, but
+   * makes Rocket.Chat process the ones already staged — under the same clock.
+   */
+  get uploadTimeoutMs(): number {
+    return this.options.uploadTimeoutMs ?? DEFAULT_UPLOAD_TIMEOUT_MS;
   }
 
   /** Builds an absolute URL for a Rocket.Chat path outside the v1 API (avatars, file downloads). */
@@ -192,12 +243,22 @@ export class RocketChatHttp {
     if (options.formData) {
       // Deliberately no Content-Type: fetch has to set the multipart boundary.
       body = options.formData;
+    } else if (options.stream) {
+      // The caller owns this one, boundary included — nothing else knows it.
+      headers['content-type'] = options.stream.contentType;
+      body = toReadableStream(options.stream.body);
     } else if (options.body !== undefined) {
       headers['content-type'] = 'application/json';
       body = JSON.stringify(options.body);
     }
 
-    const timeoutMs = options.timeoutMs ?? this.options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+    // A file body is a file on its way up, and how long that takes is a
+    // property of its size and of the link, not of the server's health. Timing
+    // it like an ordinary call reports a slow upload as an unreachable
+    // Rocket.Chat, which is both wrong and unactionable.
+    const carriesFile = Boolean(options.formData ?? options.stream);
+    const timeoutMs =
+      options.timeoutMs ?? (carriesFile ? this.uploadTimeoutMs : (this.options.timeoutMs ?? DEFAULT_TIMEOUT_MS));
     const timeoutSignal = AbortSignal.timeout(timeoutMs);
     const signal = options.signal ? AbortSignal.any([options.signal, timeoutSignal]) : timeoutSignal;
 
@@ -207,6 +268,10 @@ export class RocketChatHttp {
       body,
       signal,
       redirect: 'follow',
+      // Required for a streamed request body: it tells fetch the response may
+      // begin before the request has finished being sent. Not in the DOM
+      // typings, which still describe a body that is fully known up front.
+      ...(options.stream ? ({ duplex: 'half' } as object) : {}),
     });
   }
 

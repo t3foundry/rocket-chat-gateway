@@ -70,6 +70,16 @@ const EnvSchema = z.object({
     .default(100 * 1024 * 1024),
 
   /**
+   * How long the gateway will spend pushing one file into Rocket.Chat.
+   *
+   * Sized against `MAX_UPLOAD_BYTES` and the slowest link worth serving rather
+   * than against how responsive Rocket.Chat is: the default allows the largest
+   * accepted upload roughly 350 KB/s. Too low and a large file over a real
+   * network is reported to the user as a Rocket.Chat that stopped answering.
+   */
+  UPLOAD_TIMEOUT_SECONDS: z.coerce.number().int().min(1).default(300),
+
+  /**
    * How long an idle upstream realtime connection is kept after the last
    * browser socket detaches, so a page reload does not pay a full DDP
    * handshake and re-login.
@@ -96,6 +106,7 @@ export type GatewayConfig = {
   redisUrl?: string;
   corsOrigins: string[];
   maxUploadBytes: number;
+  uploadTimeoutMs: number;
   realtimeIdleTimeoutMs: number;
 };
 
@@ -139,6 +150,7 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): GatewayConfig 
       .map((origin) => origin.trim())
       .filter(Boolean),
     maxUploadBytes: value.MAX_UPLOAD_BYTES,
+    uploadTimeoutMs: value.UPLOAD_TIMEOUT_SECONDS * 1_000,
     realtimeIdleTimeoutMs: value.REALTIME_IDLE_TIMEOUT_SECONDS * 1_000,
   };
 };
