@@ -7,7 +7,7 @@ import {
   type OAuthLoginRequest,
   type ServerListResponse,
   type Session,
-} from '@open-rocket-chat/api-contract';
+} from '@t3foundry/open-rocket-chat-api-contract';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res, UseGuards } from '@nestjs/common';
 import type { FastifyReply } from 'fastify';
 

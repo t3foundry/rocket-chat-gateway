@@ -1,5 +1,5 @@
-import { MessageSchema, RoomSummarySchema, UserProfileSchema } from '@open-rocket-chat/api-contract';
-import type { RcMessage, RcRoom, RcSubscription, RcUser } from '@open-rocket-chat/rc-rest-client';
+import { MessageSchema, RoomSummarySchema, UserProfileSchema } from '@t3foundry/open-rocket-chat-api-contract';
+import type { RcMessage, RcRoom, RcSubscription, RcUser } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { describe, expect, it } from 'vitest';
 
 import type { AdapterContext } from '../context.js';

@@ -16,7 +16,10 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: '22'
+  # The gateway loads the ESM-only tasra SDK through `require(esm)`, which needs
+  # Node 22.12 or later; this repo supports 24.7.0 and newer, so that is the
+  # floor CI pins rather than the lowest version that would work.
+  NODE_VERSION: '24.7.0'
 
 jobs:
   verify:

@@ -2,11 +2,11 @@
 
 All notable changes to this project are documented in this file.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Until 1.0.0, minor versions may carry breaking changes to `@open-rocket-chat/api-contract`; a contract change lands here together with a matching pull request in [open-rocket-chat-client](https://github.com/zscontributor/open-rocket-chat-client).
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Until 1.0.0, minor versions may carry breaking changes to `@t3foundry/open-rocket-chat-api-contract`; a contract change lands here together with a matching pull request in [open-rocket-chat-client](https://github.com/zscontributor/open-rocket-chat-client).
 
 ## [0.1.1] — 2026-08-02
 
-A file upload of any real size failed against a Rocket.Chat that is not on localhost, and a cancelled upload landed in the room anyway. Pairs with **client 0.1.1**. No change to `@open-rocket-chat/api-contract`.
+A file upload of any real size failed against a Rocket.Chat that is not on localhost, and a cancelled upload landed in the room anyway. Pairs with **client 0.1.1**. No change to `@t3foundry/open-rocket-chat-api-contract`.
 
 ### Fixed
 
@@ -62,10 +62,10 @@ Pairs with **client 0.1.0**. This is a `0.x` release: it has run in production a
 
 | Package                                | What it is                                                                                     |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `@open-rocket-chat/api-contract`       | Domain models, HTTP contract and realtime events as zod schemas, shared by gateway and clients |
-| `@open-rocket-chat/rc-rest-client`     | Typed, dependency-free client for the Rocket.Chat REST API                                     |
-| `@open-rocket-chat/rc-realtime-client` | DDP-over-WebSocket client with reconnect and subscription recovery                             |
-| `@open-rocket-chat/rc-adapter`         | Normalises Rocket.Chat records into the domain model                                           |
+| `@t3foundry/open-rocket-chat-api-contract`       | Domain models, HTTP contract and realtime events as zod schemas, shared by gateway and clients |
+| `@t3foundry/open-rocket-chat-rc-rest-client`     | Typed, dependency-free client for the Rocket.Chat REST API                                     |
+| `@t3foundry/open-rocket-chat-rc-realtime-client` | DDP-over-WebSocket client with reconnect and subscription recovery                             |
+| `@t3foundry/open-rocket-chat-rc-adapter`         | Normalises Rocket.Chat records into the domain model                                           |
 
 These are not meant to run in a browser holding real credentials — that puts a full-access Rocket.Chat token on the page, which is what the gateway exists to avoid. See [SECURITY.md](SECURITY.md).
 
@@ -91,7 +91,7 @@ These are not meant to run in a browser holding real credentials — that puts a
 ### Not included
 
 - **Omnichannel (Livechat)** — none of Rocket.Chat's `/v1/livechat/*` API is wrapped: no queue, routing, departments, transfers, canned responses, transcripts or visitor records. What exists is what ordinary room handling brings along: a room with `t: 'l'` normalises to the `omnichannel` room type and its system messages come through as typed events. Contributions start here — schemas in `packages/api-contract`, normalisation in `packages/rc-adapter`, routes in `apps/gateway` — because the client has nothing to call until the routes exist
-- The packages are not on npm yet; the client repository resolves `@open-rocket-chat/api-contract` from a sibling checkout via a pnpm `link:` override
+- The packages are not on npm yet; the client repository resolves `@t3foundry/open-rocket-chat-api-contract` from a sibling checkout via a pnpm `link:` override
 
 ### Licence
 

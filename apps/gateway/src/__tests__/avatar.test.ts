@@ -1,4 +1,4 @@
-import { isAvatarMediaType } from '@open-rocket-chat/api-contract';
+import { isAvatarMediaType } from '@t3foundry/open-rocket-chat-api-contract';
 import { describe, expect, it, vi } from 'vitest';
 
 import { toDataUri, withSettledAvatarTag } from '../common/avatar';

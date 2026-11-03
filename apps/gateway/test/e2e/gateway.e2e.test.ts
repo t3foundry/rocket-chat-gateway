@@ -4,7 +4,7 @@ import {
   RoomSummarySchema,
   ServerEventSchema,
   type ServerEvent,
-} from '@open-rocket-chat/api-contract';
+} from '@t3foundry/open-rocket-chat-api-contract';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { WebSocket } from 'ws';

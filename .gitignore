@@ -19,3 +19,6 @@ pnpm-debug.log*
 !.vscode/extensions.json
 
 docker/volumes/
+/graphify-out/
+# Local agent-skill notes; not part of the project and not to be formatted or linted.
+/.agents/

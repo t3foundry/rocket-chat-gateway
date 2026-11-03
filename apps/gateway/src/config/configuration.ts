@@ -85,6 +85,24 @@ const EnvSchema = z.object({
    * handshake and re-login.
    */
   REALTIME_IDLE_TIMEOUT_SECONDS: z.coerce.number().int().min(0).default(30),
+
+  /**
+   * Signing key for credentials this gateway issues: a 32-byte hex seed.
+   *
+   * The seed deterministically derives the issuer DID, so rotating it changes
+   * the issuer and invalidates any slot policy that pinned the old one.
+   * Optional: a deployment that does not issue credentials still boots, and
+   * only the issuance endpoint refuses, answering `500` with code
+   * `internal_error` and message key `tasraIssuerNotConfigured`.
+   *
+   * An empty value is treated as unset, because that is what an unset variable
+   * interpolates to in `docker/stack.compose.yml`; rejecting it there would
+   * take the whole stack down over a feature nobody asked for.
+   */
+  TASRA_ISSUER_SEED: z
+    .string()
+    .refine((value) => value === '' || /^0x[0-9a-fA-F]{64}$/.test(value), 'must be 0x followed by 32 bytes of hex')
+    .optional(),
 });
 
 export type GatewayConfig = {
@@ -108,6 +126,9 @@ export type GatewayConfig = {
   maxUploadBytes: number;
   uploadTimeoutMs: number;
   realtimeIdleTimeoutMs: number;
+  tasra?: {
+    issuerSeed: string;
+  };
 };
 
 export const loadConfig = (env: NodeJS.ProcessEnv = process.env): GatewayConfig => {
@@ -152,6 +173,7 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): GatewayConfig 
     maxUploadBytes: value.MAX_UPLOAD_BYTES,
     uploadTimeoutMs: value.UPLOAD_TIMEOUT_SECONDS * 1_000,
     realtimeIdleTimeoutMs: value.REALTIME_IDLE_TIMEOUT_SECONDS * 1_000,
+    ...(value.TASRA_ISSUER_SEED ? { tasra: { issuerSeed: value.TASRA_ISSUER_SEED } } : {}),
   };
 };
 

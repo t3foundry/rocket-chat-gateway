@@ -1,9 +1,12 @@
 {
-  "name": "@open-rocket-chat/gateway",
+  "name": "@t3foundry/open-rocket-chat-gateway",
   "version": "0.1.1",
   "private": true,
   "description": "Backend-for-frontend that fronts a Rocket.Chat server with a stable, version-independent API",
   "license": "MIT",
+  "engines": {
+    "node": ">=24.7.0"
+  },
   "scripts": {
     "build": "nest build",
     "dev": "nest start --watch --exec \"node --env-file-if-exists=.env\"",
@@ -22,10 +25,11 @@
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.28",
     "@nestjs/platform-fastify": "^11.1.28",
-    "@open-rocket-chat/api-contract": "workspace:*",
-    "@open-rocket-chat/rc-adapter": "workspace:*",
-    "@open-rocket-chat/rc-realtime-client": "workspace:*",
-    "@open-rocket-chat/rc-rest-client": "workspace:*",
+    "@t3foundry/open-rocket-chat-api-contract": "workspace:*",
+    "@t3foundry/open-rocket-chat-rc-adapter": "workspace:*",
+    "@t3foundry/open-rocket-chat-rc-realtime-client": "workspace:*",
+    "@t3foundry/open-rocket-chat-rc-rest-client": "workspace:*",
+    "@t3foundry/tasra-sdk": "0.3.0-next.1",
     "fastify": "^5.11.0",
     "ioredis": "^6.0.0",
     "nestjs-pino": "^4.6.1",
@@ -39,7 +43,7 @@
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",
     "@nestjs/testing": "^11.1.28",
-    "@types/node": "^22.10.2",
+    "@types/node": "^24.19.2",
     "@types/ws": "^8.18.1",
     "pino-pretty": "^13.1.3",
     "typescript": "5.9.3",

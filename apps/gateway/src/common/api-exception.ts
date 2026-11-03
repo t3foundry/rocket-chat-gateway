@@ -1,4 +1,4 @@
-import type { ErrorCode } from '@open-rocket-chat/api-contract';
+import type { ErrorCode } from '@t3foundry/open-rocket-chat-api-contract';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 import {

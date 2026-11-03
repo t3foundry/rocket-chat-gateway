@@ -7,9 +7,9 @@ import {
   type SetMyAvatarResponse,
   type UpdateMyStatusRequest,
   type UpdateMyStatusResponse,
-} from '@open-rocket-chat/api-contract';
-import { toMyProfile, toUserProfile, toUserSummary } from '@open-rocket-chat/rc-adapter';
-import type { RocketChatUserClient } from '@open-rocket-chat/rc-rest-client';
+} from '@t3foundry/open-rocket-chat-api-contract';
+import { toMyProfile, toUserProfile, toUserSummary } from '@t3foundry/open-rocket-chat-rc-adapter';
+import type { RocketChatUserClient } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import {
   Body,
   Controller,

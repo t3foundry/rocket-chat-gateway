@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 
-import { API_BASE_PATH } from '@open-rocket-chat/api-contract';
+import { API_BASE_PATH } from '@t3foundry/open-rocket-chat-api-contract';
 import fastifyCookie from '@fastify/cookie';
-import { SERVER_ID_HEADER } from '@open-rocket-chat/api-contract';
+import { SERVER_ID_HEADER } from '@t3foundry/open-rocket-chat-api-contract';
 import fastifyCors from '@fastify/cors';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyMultipart from '@fastify/multipart';

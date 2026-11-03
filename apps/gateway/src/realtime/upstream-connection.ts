@@ -1,11 +1,11 @@
-import { REALTIME_PROTOCOL_VERSION, type RoomType, type ServerEvent } from '@open-rocket-chat/api-contract';
-import { toMessage, toUserSummary, type AdapterContext } from '@open-rocket-chat/rc-adapter';
-import type { RcMessage } from '@open-rocket-chat/rc-rest-client';
+import { REALTIME_PROTOCOL_VERSION, type RoomType, type ServerEvent } from '@t3foundry/open-rocket-chat-api-contract';
+import { toMessage, toUserSummary, type AdapterContext } from '@t3foundry/open-rocket-chat-rc-adapter';
+import type { RcMessage } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import {
   RocketChatRealtimeClient,
   type DesktopNotificationEvent,
   type Unsubscribe,
-} from '@open-rocket-chat/rc-realtime-client';
+} from '@t3foundry/open-rocket-chat-rc-realtime-client';
 import type { PinoLogger } from 'nestjs-pino';
 
 import type { RoomsService } from '../rooms/rooms.service';

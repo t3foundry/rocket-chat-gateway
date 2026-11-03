@@ -1,4 +1,4 @@
-import type { ListCustomEmojiResponse } from '@open-rocket-chat/api-contract';
+import type { ListCustomEmojiResponse } from '@t3foundry/open-rocket-chat-api-contract';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
 import { toApiException } from '../common/upstream-error';

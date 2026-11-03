@@ -1,5 +1,5 @@
-import type { Mention, Message, Reaction } from '@open-rocket-chat/api-contract';
-import type { RcMention, RcMessage } from '@open-rocket-chat/rc-rest-client';
+import type { Mention, Message, Reaction } from '@t3foundry/open-rocket-chat-api-contract';
+import type { RcMention, RcMessage } from '@t3foundry/open-rocket-chat-rc-rest-client';
 
 import { toAttachment, toFileRefs } from './attachment.js';
 import { toIsoString, toIsoStringOrEpoch, type AdapterContext } from './context.js';

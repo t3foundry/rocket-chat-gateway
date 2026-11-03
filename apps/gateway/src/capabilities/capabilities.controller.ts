@@ -1,4 +1,4 @@
-import type { ServerCapabilities } from '@open-rocket-chat/api-contract';
+import type { ServerCapabilities } from '@t3foundry/open-rocket-chat-api-contract';
 import { Controller, Get, UseGuards } from '@nestjs/common';
 
 import { CurrentSession, SessionGuard } from '../session/session.guard';

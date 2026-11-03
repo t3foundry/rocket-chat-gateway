@@ -1,5 +1,5 @@
-import type { Attachment, AttachmentKind, FileRef } from '@open-rocket-chat/api-contract';
-import type { RcAttachment, RcFileProp } from '@open-rocket-chat/rc-rest-client';
+import type { Attachment, AttachmentKind, FileRef } from '@t3foundry/open-rocket-chat-api-contract';
+import type { RcAttachment, RcFileProp } from '@t3foundry/open-rocket-chat-rc-rest-client';
 
 import { toIsoString, type AdapterContext } from './context.js';
 

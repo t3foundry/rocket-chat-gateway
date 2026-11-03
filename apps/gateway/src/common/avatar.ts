@@ -1,4 +1,4 @@
-import { isAvatarMediaType } from '@open-rocket-chat/api-contract';
+import { isAvatarMediaType } from '@t3foundry/open-rocket-chat-api-contract';
 import type { FastifyRequest } from 'fastify';
 
 import { ApiException } from './api-exception';

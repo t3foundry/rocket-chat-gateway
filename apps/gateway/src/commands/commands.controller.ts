@@ -3,7 +3,7 @@ import {
   type ListCommandsResponse,
   type RunCommandRequest,
   type RunCommandResponse,
-} from '@open-rocket-chat/api-contract';
+} from '@t3foundry/open-rocket-chat-api-contract';
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 
 import { toApiException } from '../common/upstream-error';

@@ -1,5 +1,5 @@
-import type { LoginService } from '@open-rocket-chat/api-contract';
-import type { RcLoginServiceConfiguration } from '@open-rocket-chat/rc-rest-client';
+import type { LoginService } from '@t3foundry/open-rocket-chat-api-contract';
+import type { RcLoginServiceConfiguration } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 

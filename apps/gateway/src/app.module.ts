@@ -16,6 +16,7 @@ import { RealtimeModule } from './realtime/realtime.module';
 import { RocketChatModule } from './rocketchat/rocketchat.module';
 import { RoomsModule } from './rooms/rooms.module';
 import { SessionModule } from './session/session.module';
+import { TasraModule } from './tasra/tasra.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -58,6 +59,7 @@ import { UsersModule } from './users/users.module';
     EmojiModule,
     CommandsModule,
     CapabilitiesModule,
+    TasraModule,
     RealtimeModule,
   ],
   controllers: [HealthController],

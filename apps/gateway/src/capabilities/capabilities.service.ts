@@ -1,4 +1,4 @@
-import type { ServerCapabilities, ServerSettings } from '@open-rocket-chat/api-contract';
+import type { ServerCapabilities, ServerSettings } from '@t3foundry/open-rocket-chat-api-contract';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 

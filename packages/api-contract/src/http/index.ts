@@ -7,3 +7,4 @@ export * from './users.js';
 export * from './emoji.js';
 export * from './commands.js';
 export * from './capabilities.js';
+export * from './tasra.js';

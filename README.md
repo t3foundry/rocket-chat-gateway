@@ -62,10 +62,10 @@ Several Rocket.Chat servers behind one session is the default shape rather than 
 
 | Package                                | Purpose                                                                                         |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `@open-rocket-chat/api-contract`       | Domain models, HTTP contract and realtime events as zod schemas. Shared by gateway and clients. |
-| `@open-rocket-chat/rc-rest-client`     | Typed, dependency-free client for the Rocket.Chat REST API.                                     |
-| `@open-rocket-chat/rc-realtime-client` | DDP-over-WebSocket client with reconnect and subscription recovery.                             |
-| `@open-rocket-chat/rc-adapter`         | Normalises Rocket.Chat records into the domain model.                                           |
+| `@t3foundry/open-rocket-chat-api-contract`       | Domain models, HTTP contract and realtime events as zod schemas. Shared by gateway and clients. |
+| `@t3foundry/open-rocket-chat-rc-rest-client`     | Typed, dependency-free client for the Rocket.Chat REST API.                                     |
+| `@t3foundry/open-rocket-chat-rc-realtime-client` | DDP-over-WebSocket client with reconnect and subscription recovery.                             |
+| `@t3foundry/open-rocket-chat-rc-adapter`         | Normalises Rocket.Chat records into the domain model.                                           |
 | `apps/gateway`                         | The NestJS + Fastify service that ties them together.                                           |
 
 The packages are usable on their own. If you only want a typed Rocket.Chat SDK and no gateway, take
@@ -84,7 +84,7 @@ pnpm run build
 pnpm run rc:up
 
 cp apps/gateway/.env.example apps/gateway/.env
-pnpm --filter @open-rocket-chat/gateway dev
+pnpm --filter @t3foundry/open-rocket-chat-gateway dev
 ```
 
 The gateway listens on `http://localhost:4000`, serving HTTP under `/api/v1` and realtime at `/ws`.
@@ -149,6 +149,7 @@ One session can be signed in to several Rocket.Chat servers at once. Every reque
 | `GET`            | `users/:userIdOrUsername` · `users/search`           | Profiles and autocomplete                                      |
 | `PATCH`          | `users/me/status`                                    | Own presence and status message                                |
 | `POST`/`DELETE`  | `users/me/avatar`                                    | Set own picture (`image` part), or go back to initials         |
+| `POST`           | `tasra/credentials/document-reader`                  | Mint a DocumentReader SD-JWT VC; bypasses OID4VCI by design    |
 | `GET`            | `health` · `health/upstream`                         | Liveness and readiness                                         |
 
 Errors always match `ApiErrorSchema`, with a stable `code` (`unauthorized`, `totp_required`, `unsupported_by_server`, …) rather than a Rocket.Chat error string. The human-readable prose is negotiated with `Accept-Language` — English and Japanese today — while codes, `upstream` identifiers and structured `details` never change, so clients branch on them regardless of language. See [docs/i18n.md](docs/i18n.md).
@@ -174,6 +175,22 @@ Three behaviours are worth knowing:
 - **`connection.degraded`** means the gateway lost its upstream link. Events produced during the gap are _not_ replayed — refetch when the next `connection.ready` arrives.
 - **`gapBefore`** on a message page means an `after` query could not be made contiguous. Rocket.Chat can only return the _newest_ messages in a time range, so catching up across a very long disconnect can leave a hole. Reload the room rather than appending.
 - **`notification`** arrives without any subscription, for every room the user belongs to. Rocket.Chat has already decided the message is worth interrupting someone for — weighing the subscription's alert setting, mentions, presence and the workspace defaults — so a client should show it rather than re-deriving the decision from `message.created`, which only fires for rooms it happens to be watching.
+
+### Issuing reader credentials
+
+`tasra/credentials/document-reader` mints a Holder-bound `DocumentReader` SD-JWT VC directly, skipping OID4VCI entirely: no credential offer, token endpoint, nonce or proof JWT. A valid gateway session is the only gate, so there is nothing to register in Rocket.Chat and no callback to host. The body names the slot id that becomes the credential's `key` claim and the holder's `did:jwk`; the holder is bound through `cnf` (`<did>#0`) and, exactly as the OID4VCI flow does, no `sub` claim is written.
+
+The request names the slot, so any session holder can mint a `DocumentReader` for any slot id and bind it to their own `did:jwk`. A slot must not treat a credential from this issuer as evidence that its presenter is authorised for that particular slot.
+
+The signing key is `TASRA_ISSUER_SEED`, an `0x`-prefixed 32-byte hex seed, and it is the credential's whole identity. The seed configured for the Tasra deployment derives the issuer `did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5IiwieCI6ImRqMVdYSzJoem1lTWE5NzVPZllTR25aZkhLOGZMVG5CeGItNXdfN1N5ZFEifQ`. Rotating the seed changes that DID, so a slot's credential policy has to pin whichever DID is currently signing — otherwise the credential presented for it does not satisfy the rule:
+
+```ts
+import { credentialPolicy } from '@t3foundry/tasra-sdk/app';
+
+credentialPolicy({ issuer: '<issuer did>', type: 'DocumentReader', claims: { key: [slotId] } });
+```
+
+Leave `TASRA_ISSUER_SEED` unset and the route answers `500` with code `internal_error` and message key `tasraIssuerNotConfigured`, while the rest of the gateway keeps working.
 
 ## Configuration
 

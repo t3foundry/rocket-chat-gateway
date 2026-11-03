@@ -1,5 +1,5 @@
 {
-  "name": "open-rocket-chat-gateway",
+  "name": "@t3foundry/open-rocket-chat-gateway",
   "version": "0.1.1",
   "private": true,
   "description": "Backend-for-frontend gateway and TypeScript SDK for Rocket.Chat-compatible servers",
@@ -9,7 +9,7 @@
     "url": "git+https://github.com/zscontributor/open-rocket-chat-gateway.git"
   },
   "engines": {
-    "node": ">=20.11"
+    "node": ">=24.7.0"
   },
   "packageManager": "pnpm@10.28.2",
   "scripts": {
@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^26.1.2",
+    "@types/node": "^24.19.2",
     "eslint": "^10.8.0",
     "globals": "^17.8.0",
     "prettier": "^3.9.6",

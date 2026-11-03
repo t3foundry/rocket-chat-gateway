@@ -1,5 +1,5 @@
-import type { FileTypeGroup, RoomFile } from '@open-rocket-chat/api-contract';
-import type { RcUpload } from '@open-rocket-chat/rc-rest-client';
+import type { FileTypeGroup, RoomFile } from '@t3foundry/open-rocket-chat-api-contract';
+import type { RcUpload } from '@t3foundry/open-rocket-chat-rc-rest-client';
 
 import { toIsoString, type AdapterContext } from './context.js';
 import { toUserSummary } from './user.js';

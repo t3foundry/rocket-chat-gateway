@@ -19,9 +19,9 @@ import type {
   ListRoomsResponse,
   RoomSummary,
   UpdateRoomStateRequest,
-} from '@open-rocket-chat/api-contract';
-import { toRoom, toRoomFile, toRoomSummary, toUserSummary } from '@open-rocket-chat/rc-adapter';
-import type { RcNotificationPreferences, RcRoom, RcSubscription } from '@open-rocket-chat/rc-rest-client';
+} from '@t3foundry/open-rocket-chat-api-contract';
+import { toRoom, toRoomFile, toRoomSummary, toUserSummary } from '@t3foundry/open-rocket-chat-rc-adapter';
+import type { RcNotificationPreferences, RcRoom, RcSubscription } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { Injectable } from '@nestjs/common';
 
 import { ApiException } from '../common/api-exception';

@@ -1,8 +1,11 @@
 {
-  "name": "@open-rocket-chat/rc-adapter",
+  "name": "@t3foundry/open-rocket-chat-rc-adapter",
   "version": "0.1.1",
   "description": "Normalises Rocket.Chat wire records into the Open Rocket.Chat domain model",
   "license": "MIT",
+  "engines": {
+    "node": ">=24.7.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zscontributor/open-rocket-chat-gateway.git",
@@ -32,8 +35,8 @@
     "clean": "rm -rf dist .turbo *.tsbuildinfo"
   },
   "dependencies": {
-    "@open-rocket-chat/api-contract": "workspace:*",
-    "@open-rocket-chat/rc-rest-client": "workspace:*"
+    "@t3foundry/open-rocket-chat-api-contract": "workspace:*",
+    "@t3foundry/open-rocket-chat-rc-rest-client": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

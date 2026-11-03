@@ -1,5 +1,5 @@
-import type { UploadFileResponse } from '@open-rocket-chat/api-contract';
-import { toMessage } from '@open-rocket-chat/rc-adapter';
+import type { UploadFileResponse } from '@t3foundry/open-rocket-chat-api-contract';
+import { toMessage } from '@t3foundry/open-rocket-chat-rc-adapter';
 import { Controller, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Readable } from 'node:stream';

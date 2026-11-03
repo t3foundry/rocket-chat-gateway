@@ -1,4 +1,4 @@
-import { RocketChatApiError, RocketChatTransportError } from '@open-rocket-chat/rc-rest-client';
+import { RocketChatApiError, RocketChatTransportError } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { describe, expect, it } from 'vitest';
 
 import { toApiException } from '../common/upstream-error';

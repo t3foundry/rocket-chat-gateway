@@ -1,5 +1,5 @@
-import type { PresenceStatus, UserProfile, UserSummary } from '@open-rocket-chat/api-contract';
-import type { RcUser, RcUserSummary } from '@open-rocket-chat/rc-rest-client';
+import type { PresenceStatus, UserProfile, UserSummary } from '@t3foundry/open-rocket-chat-api-contract';
+import type { RcUser, RcUserSummary } from '@t3foundry/open-rocket-chat-rc-rest-client';
 
 import { toIsoString, type AdapterContext } from './context.js';
 

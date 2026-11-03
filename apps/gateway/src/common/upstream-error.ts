@@ -1,6 +1,6 @@
-import type { ErrorCode } from '@open-rocket-chat/api-contract';
-import { RocketChatApiError, RocketChatTransportError } from '@open-rocket-chat/rc-rest-client';
-import { DdpConnectionError, DdpMethodError } from '@open-rocket-chat/rc-realtime-client';
+import type { ErrorCode } from '@t3foundry/open-rocket-chat-api-contract';
+import { RocketChatApiError, RocketChatTransportError } from '@t3foundry/open-rocket-chat-rc-rest-client';
+import { DdpConnectionError, DdpMethodError } from '@t3foundry/open-rocket-chat-rc-realtime-client';
 
 import { ApiException } from './api-exception';
 

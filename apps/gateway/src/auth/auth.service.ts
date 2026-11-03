@@ -1,6 +1,6 @@
-import type { LoginRequest, OAuthLoginRequest, Session, ServerConnection } from '@open-rocket-chat/api-contract';
-import type { LoginResult } from '@open-rocket-chat/rc-rest-client';
-import { toMyProfile } from '@open-rocket-chat/rc-adapter';
+import type { LoginRequest, OAuthLoginRequest, Session, ServerConnection } from '@t3foundry/open-rocket-chat-api-contract';
+import type { LoginResult } from '@t3foundry/open-rocket-chat-rc-rest-client';
+import { toMyProfile } from '@t3foundry/open-rocket-chat-rc-adapter';
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 

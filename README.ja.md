@@ -62,10 +62,10 @@
 
 | パッケージ                             | 役割                                                                                                  |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `@open-rocket-chat/api-contract`       | データモデル、HTTP API、リアルタイムイベントを Zod スキーマで定義。ゲートウェイとクライアントで共有。 |
-| `@open-rocket-chat/rc-rest-client`     | Rocket.Chat REST API 向けの、型付きで依存関係のないクライアント。                                     |
-| `@open-rocket-chat/rc-realtime-client` | 再接続とサブスクリプション復旧に対応した DDP-over-WebSocket クライアント。                            |
-| `@open-rocket-chat/rc-adapter`         | Rocket.Chat のレコードをドメインモデルへ正規化。                                                      |
+| `@t3foundry/open-rocket-chat-api-contract`       | データモデル、HTTP API、リアルタイムイベントを Zod スキーマで定義。ゲートウェイとクライアントで共有。 |
+| `@t3foundry/open-rocket-chat-rc-rest-client`     | Rocket.Chat REST API 向けの、型付きで依存関係のないクライアント。                                     |
+| `@t3foundry/open-rocket-chat-rc-realtime-client` | 再接続とサブスクリプション復旧に対応した DDP-over-WebSocket クライアント。                            |
+| `@t3foundry/open-rocket-chat-rc-adapter`         | Rocket.Chat のレコードをドメインモデルへ正規化。                                                      |
 | `apps/gateway`                         | それらを束ねる NestJS + Fastify サービス。                                                            |
 
 各パッケージは単体でも使えます。ゲートウェイは不要で型付きの Rocket.Chat SDK だけが欲しい場合は、
@@ -84,7 +84,7 @@ pnpm run build
 pnpm run rc:up
 
 cp apps/gateway/.env.example apps/gateway/.env
-pnpm --filter @open-rocket-chat/gateway dev
+pnpm --filter @t3foundry/open-rocket-chat-gateway dev
 ```
 
 ゲートウェイは `http://localhost:4000` で待ち受け、HTTP を `/api/v1` 配下、リアルタイムを `/ws` で提供します。

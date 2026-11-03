@@ -62,10 +62,10 @@ Hỗ trợ nhiều máy chủ Rocket.Chat trong một phiên là một phần c�
 
 | Package                                | Mục đích                                                                                                         |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `@open-rocket-chat/api-contract`       | Mô hình dữ liệu, giao kèo HTTP và sự kiện thời gian thực dưới dạng schema Zod. Gateway và các client dùng chung. |
-| `@open-rocket-chat/rc-rest-client`     | Client có đầy đủ kiểu dữ liệu cho REST API của Rocket.Chat, không phụ thuộc thư viện ngoài.                      |
-| `@open-rocket-chat/rc-realtime-client` | Client DDP qua WebSocket, hỗ trợ kết nối lại và khôi phục đăng ký sự kiện.                                       |
-| `@open-rocket-chat/rc-adapter`         | Chuẩn hoá dữ liệu Rocket.Chat thành mô hình dùng chung.                                                          |
+| `@t3foundry/open-rocket-chat-api-contract`       | Mô hình dữ liệu, giao kèo HTTP và sự kiện thời gian thực dưới dạng schema Zod. Gateway và các client dùng chung. |
+| `@t3foundry/open-rocket-chat-rc-rest-client`     | Client có đầy đủ kiểu dữ liệu cho REST API của Rocket.Chat, không phụ thuộc thư viện ngoài.                      |
+| `@t3foundry/open-rocket-chat-rc-realtime-client` | Client DDP qua WebSocket, hỗ trợ kết nối lại và khôi phục đăng ký sự kiện.                                       |
+| `@t3foundry/open-rocket-chat-rc-adapter`         | Chuẩn hoá dữ liệu Rocket.Chat thành mô hình dùng chung.                                                          |
 | `apps/gateway`                         | Dịch vụ NestJS + Fastify kết nối các thành phần trên.                                                            |
 
 Bạn cũng có thể dùng riêng từng package. Nếu chỉ cần một SDK Rocket.Chat có kiểu dữ liệu đầy đủ mà không cần gateway, hãy dùng
@@ -84,7 +84,7 @@ pnpm run build
 pnpm run rc:up
 
 cp apps/gateway/.env.example apps/gateway/.env
-pnpm --filter @open-rocket-chat/gateway dev
+pnpm --filter @t3foundry/open-rocket-chat-gateway dev
 ```
 
 Gateway chạy tại `http://localhost:4000`, cung cấp HTTP API dưới `/api/v1` và kết nối thời gian thực tại `/ws`.

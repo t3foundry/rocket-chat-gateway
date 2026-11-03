@@ -6,9 +6,9 @@ import type {
   Message,
   SearchMessagesResponse,
   SendMessageRequest,
-} from '@open-rocket-chat/api-contract';
-import { toMessage } from '@open-rocket-chat/rc-adapter';
-import type { RcMessage } from '@open-rocket-chat/rc-rest-client';
+} from '@t3foundry/open-rocket-chat-api-contract';
+import { toMessage } from '@t3foundry/open-rocket-chat-rc-adapter';
+import type { RcMessage } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { Injectable } from '@nestjs/common';
 
 import { toApiException } from '../common/upstream-error';

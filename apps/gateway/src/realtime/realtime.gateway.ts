@@ -1,4 +1,4 @@
-import { ClientCommandSchema, REALTIME_PATH, type ServerEvent } from '@open-rocket-chat/api-contract';
+import { ClientCommandSchema, REALTIME_PATH, type ServerEvent } from '@t3foundry/open-rocket-chat-api-contract';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Inject, Injectable, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import type { IncomingMessage, Server as HttpServer } from 'node:http';

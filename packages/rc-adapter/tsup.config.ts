@@ -11,5 +11,5 @@ export default defineConfig((options) => ({
   clean: !options.watch,
   treeshake: true,
   target: 'es2023',
-  external: ['@open-rocket-chat/api-contract', '@open-rocket-chat/rc-rest-client'],
+  external: ['@t3foundry/open-rocket-chat-api-contract', '@t3foundry/open-rocket-chat-rc-rest-client'],
 }));

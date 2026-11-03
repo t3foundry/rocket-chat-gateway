@@ -100,6 +100,9 @@ services:
       REDIS_URL: redis://redis:6379
       PORT: '4000'
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Signs the DocumentReader credentials this gateway mints. An empty value
+      # leaves issuance disabled (500), rather than failing the whole stack.
+      TASRA_ISSUER_SEED: ${TASRA_ISSUER_SEED:-}
     ports:
       - '${GATEWAY_PORT:-4000}:4000'
     healthcheck:

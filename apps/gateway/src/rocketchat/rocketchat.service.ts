@@ -1,5 +1,5 @@
-import type { AdapterContext } from '@open-rocket-chat/rc-adapter';
-import { RocketChatRestClient, type RocketChatUserClient, type UploadStrategy } from '@open-rocket-chat/rc-rest-client';
+import type { AdapterContext } from '@t3foundry/open-rocket-chat-rc-adapter';
+import { RocketChatRestClient, type RocketChatUserClient, type UploadStrategy } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 

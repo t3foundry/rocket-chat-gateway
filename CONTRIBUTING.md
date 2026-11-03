@@ -10,7 +10,7 @@ pnpm run build
 pnpm run rc:up       # Rocket.Chat + MongoDB on localhost:3000
 ```
 
-Node 20.11+ and pnpm 10 are required. `pnpm run rc:down` tears the stack down; `docker compose -f docker/rocketchat.compose.yml down -v` also drops the database.
+Node 24.7+ and pnpm 10 are required. `pnpm run rc:down` tears the stack down; `docker compose -f docker/rocketchat.compose.yml down -v` also drops the database.
 
 ## Branching model
 

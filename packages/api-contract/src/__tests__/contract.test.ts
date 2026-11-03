@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   ClientCommandSchema,
+  IssueDocumentReaderRequestSchema,
+  IssueDocumentReaderResponseSchema,
   ListMessagesQuerySchema,
   ListRoomsQuerySchema,
   ServerEventSchema,
@@ -9,6 +11,11 @@ import {
   UpdateMyStatusRequestSchema,
   UpdateRoomStateRequestSchema,
 } from '../index.js';
+
+/** A `did:jwk` (Ed25519) — the only DID form the issuer can bind a holder to. */
+const HOLDER_DID =
+  'did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5IiwieCI6IjBFcXlNblFydEtzNkUyaTlSaFhrNXRBaVNyY2FBV3V2aFNDak1zbDNoemMifQ';
+const SLOT_ID = `0x${'ab'.repeat(32)}`;
 
 describe('query schemas', () => {
   it('coerces query strings, which always arrive as text', () => {
@@ -156,5 +163,92 @@ describe('realtime schemas', () => {
     };
 
     expect(ServerEventSchema.safeParse(withoutMessage).success).toBe(false);
+  });
+});
+
+describe('document reader issuance schema', () => {
+  it('accepts a 32-byte slot id and a did:jwk holder', () => {
+    const parsed = IssueDocumentReaderRequestSchema.parse({ slotId: SLOT_ID, did: HOLDER_DID });
+
+    expect(parsed).toEqual({ slotId: SLOT_ID, did: HOLDER_DID });
+  });
+
+  it('rejects a slot id that is not exactly 32 bytes of hex', () => {
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: '0xabcd', did: HOLDER_DID }).success).toBe(false);
+    expect(
+      IssueDocumentReaderRequestSchema.safeParse({ slotId: `0x${'zz'.repeat(32)}`, did: HOLDER_DID }).success,
+    ).toBe(false);
+    // No `0x` prefix is a different identifier, not a slot id.
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: 'ab'.repeat(32), did: HOLDER_DID }).success).toBe(
+      false,
+    );
+  });
+
+  it('rejects anything that is not a DID', () => {
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'alice' }).success).toBe(false);
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: '' }).success).toBe(false);
+  });
+
+  it('rejects did:key, which no wallet can present against the minted credential', () => {
+    // The reference OID4VCI flow binds the holder through `cnf.kid = <did:jwk>#0`;
+    // a did:key holder would mint a credential nothing can satisfy.
+    expect(
+      IssueDocumentReaderRequestSchema.safeParse({
+        slotId: SLOT_ID,
+        did: 'did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK',
+      }).success,
+    ).toBe(false);
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'did:web:example.com' }).success).toBe(
+      false,
+    );
+  });
+
+  it('rejects a did:jwk whose suffix is not a base64url-encoded JSON object', () => {
+    // `bm90LWpzb24` is "not-json"; `InN0cmluZyI` is the JSON string "string".
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'did:jwk:bm90LWpzb24' }).success).toBe(
+      false,
+    );
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'did:jwk:InN0cmluZyI' }).success).toBe(
+      false,
+    );
+    // Decodes to `{}`, which names no key type.
+    expect(IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'did:jwk:e30' }).success).toBe(false);
+  });
+
+  it('rejects a did:jwk whose kty is present but not a key type name', () => {
+    // `eyJrdHkiOm51bGx9` is `{"kty":null}`; `eyJrdHkiOnsiYSI6MX19` is
+    // `{"kty":{"a":1}}`. Both carry a `kty` member and neither names a key type,
+    // so testing for the member alone would have accepted them.
+    expect(
+      IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'did:jwk:eyJrdHkiOm51bGx9' }).success,
+    ).toBe(false);
+    expect(
+      IssueDocumentReaderRequestSchema.safeParse({ slotId: SLOT_ID, did: 'did:jwk:eyJrdHkiOnsiYSI6MX19' }).success,
+    ).toBe(false);
+  });
+});
+
+describe('document reader issuance response schema', () => {
+  const response = {
+    credential: 'eyJhbGciOiJFZERTQSJ9.eyJpc3MiOiJkaWQ6andrOiJ9~WyJzYWx0Iiwia2V5IiwiMHhhYiJd~',
+    issuer: HOLDER_DID,
+    vct: 'DocumentReader',
+    expiresAt: '2027-11-02T10:00:00.000Z',
+  };
+
+  it('accepts the body the gateway answers with', () => {
+    expect(IssueDocumentReaderResponseSchema.parse(response)).toEqual(response);
+  });
+
+  it('rejects a credential of another type, which a slot policy would not match', () => {
+    expect(IssueDocumentReaderResponseSchema.safeParse({ ...response, vct: 'IdentityCredential' }).success).toBe(false);
+  });
+
+  it('rejects an expiresAt that is not an ISO-8601 instant', () => {
+    expect(IssueDocumentReaderResponseSchema.safeParse({ ...response, expiresAt: 'next November' }).success).toBe(
+      false,
+    );
+    // A bare date carries no time, so a client cannot say when it expired.
+    expect(IssueDocumentReaderResponseSchema.safeParse({ ...response, expiresAt: '2027-11-02' }).success).toBe(false);
   });
 });

@@ -21,7 +21,7 @@ import {
   type SearchMessagesResponse,
   type SendMessageRequest,
   type UpdateMessageRequest,
-} from '@open-rocket-chat/api-contract';
+} from '@t3foundry/open-rocket-chat-api-contract';
 import {
   Body,
   Controller,

@@ -3,7 +3,7 @@
  *
  * These intentionally mirror the wire format, warts included (`_id`, `rid`,
  * single-letter fields). Translating them into something pleasant is the job of
- * `@open-rocket-chat/rc-adapter`; doing it here would hide the version drift
+ * `@t3foundry/open-rocket-chat-rc-adapter`; doing it here would hide the version drift
  * this package exists to absorb.
  *
  * Every field beyond the ones Rocket.Chat has always guaranteed is optional,

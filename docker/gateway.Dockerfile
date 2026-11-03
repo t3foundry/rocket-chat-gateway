@@ -1,6 +1,6 @@
 # Build from the repository root:
 #   docker build -f docker/gateway.Dockerfile -t zsoft/open-rocket-chat-gateway .
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 ENV PNPM_HOME=/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable

@@ -1,4 +1,4 @@
-import { SERVER_ID_HEADER } from '@open-rocket-chat/api-contract';
+import { SERVER_ID_HEADER } from '@t3foundry/open-rocket-chat-api-contract';
 import { Injectable, createParamDecorator, type CanActivate, type ExecutionContext } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 

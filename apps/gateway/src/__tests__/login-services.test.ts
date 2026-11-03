@@ -1,4 +1,4 @@
-import type { RcLoginServiceConfiguration } from '@open-rocket-chat/rc-rest-client';
+import type { RcLoginServiceConfiguration } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { describe, expect, it, vi } from 'vitest';
 
 import { LoginServicesService } from '../auth/login-services.service';

@@ -5,7 +5,7 @@ import fastifyCors from '@fastify/cors';
 import fastifyMultipart from '@fastify/multipart';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import { API_BASE_PATH } from '@open-rocket-chat/api-contract';
+import { API_BASE_PATH } from '@t3foundry/open-rocket-chat-api-contract';
 
 import { AppModule } from '../../src/app.module';
 

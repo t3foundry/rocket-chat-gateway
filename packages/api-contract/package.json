@@ -1,8 +1,11 @@
 {
-  "name": "@open-rocket-chat/api-contract",
+  "name": "@t3foundry/open-rocket-chat-api-contract",
   "version": "0.1.1",
   "description": "Transport-agnostic domain models, HTTP contract and realtime event schemas shared by the Open Rocket.Chat gateway and clients",
   "license": "MIT",
+  "engines": {
+    "node": ">=24.7.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zscontributor/open-rocket-chat-gateway.git",
