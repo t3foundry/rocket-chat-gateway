@@ -45,4 +45,14 @@ export default tseslint.config(
       'no-console': 'off',
     },
   },
+
+  {
+    // The documentation test is a plain Node script, but it inspects the records
+    // its subjects produce with the same browser primitives they use — `atob`,
+    // `TextDecoder` — so both sets of globals are in play.
+    files: ['docs/encryption-tests/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node, atob: 'readonly', btoa: 'readonly' },
+    },
+  },
 );

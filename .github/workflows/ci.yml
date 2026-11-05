@@ -53,6 +53,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm run build
       - run: pnpm run test
+      # The documentation snippets are extracted from the markdown and executed,
+      # so this gates the doc against SDK drift rather than a copy of it.
+      - run: pnpm run test:docs
 
   audit:
     name: Dependency audit

@@ -99,6 +99,9 @@ importers:
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      viem:
+        specifier: ^2.57.14
+        version: 2.57.14(typescript@5.9.3)(zod@4.4.3)
       ws:
         specifier: ^8.21.1
         version: 8.21.1

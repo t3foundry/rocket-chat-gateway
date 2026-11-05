@@ -150,6 +150,8 @@ One session can be signed in to several Rocket.Chat servers at once. Every reque
 | `PATCH`          | `users/me/status`                                    | Own presence and status message                                |
 | `POST`/`DELETE`  | `users/me/avatar`                                    | Set own picture (`image` part), or go back to initials         |
 | `POST`           | `tasra/credentials/document-reader`                  | Mint a DocumentReader SD-JWT VC; bypasses OID4VCI by design    |
+| `GET`            | `tasra/public-key`                                   | A slot's BLS group public key and epoch, from the registry     |
+| `GET`            | `tasra/deployment`                                   | Chain id and key registry a manifest has to name               |
 | `GET`            | `health` · `health/upstream`                         | Liveness and readiness                                         |
 
 Errors always match `ApiErrorSchema`, with a stable `code` (`unauthorized`, `totp_required`, `unsupported_by_server`, …) rather than a Rocket.Chat error string. The human-readable prose is negotiated with `Accept-Language` — English and Japanese today — while codes, `upstream` identifiers and structured `details` never change, so clients branch on them regardless of language. See [docs/i18n.md](docs/i18n.md).
@@ -191,6 +193,16 @@ credentialPolicy({ issuer: '<issuer did>', type: 'DocumentReader', claims: { key
 ```
 
 Leave `TASRA_ISSUER_SEED` unset and the route answers `500` with code `internal_error` and message key `tasraIssuerNotConfigured`, while the rest of the gateway keeps working.
+
+### Encrypted channels
+
+A channel whose room description starts with `tasra:0x<slotId>` carries sealed
+messages instead of text. The gateway's part is small — it mints the reader
+credential, serves the slot's public key, and reports the chain identity a manifest
+has to name — while encryption happens in the client and decryption goes through the
+slot's verifier and keeper committees. The message format, those three calls, and the
+invariants a reader has to check are documented in
+[docs/tasra-encrypted-channels.md](docs/tasra-encrypted-channels.md).
 
 ## Configuration
 

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Source artefact: examples/demo.encrypted.json (schema tasra-encrypt/v2). Envelope wire layout: src/crypto/envelope.ts (GroupEnvelope v0x02) and src/crypto/kem.ts. Invariants JSON Schema cannot express, verified by decoding the sample: encryptedAesKey is a v0x02 envelope whose version byte is 0x02, whose slot_id equals manifest.slotId, and whose i64 LE epoch equals envelope.epoch; its identity field is the KEM additional-authenticated-data. Validate those after base64-decoding.",
+  "title": "tasra-encrypt/v2 encrypted record",
+  "description": "A sealed record: record identity and key parameters in `manifest`, ciphertext material in `envelope`. The payload is encrypted with AES-256-GCM under a per-record data key, and only that data key is wrapped by the BLS KEM slot.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["manifest", "envelope"],
+  "properties": {
+    "manifest": {
+      "$ref": "#/$defs/manifest"
+    },
+    "envelope": {
+      "$ref": "#/$defs/envelope"
+    }
+  },
+  "$defs": {
+    "base64": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "manifest": {
+      "type": "object",
+      "description": "Record identity, integrity anchor and BLS slot parameters. All fields are required.",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "recordId",
+        "title",
+        "version",
+        "documentSha256",
+        "chainId",
+        "keyRegistry",
+        "slotId"
+      ],
+      "properties": {
+        "schema": {
+          "const": "tasra-encrypt/v2",
+          "description": "Envelope format identifier. Consumers must reject any other value."
+        },
+        "recordId": {
+          "type": "string",
+          "description": "Stable UUID for the record, used in logs, receipts and AAD derivation.",
+          "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable label; opaque to the crypto layer.",
+          "maxLength": 4096
+        },
+        "version": {
+          "type": "integer",
+          "description": "Monotonic version counter for the plaintext, incremented on every update. Consumers can use it to detect stale or replayed records.",
+          "minimum": 0
+        },
+        "documentSha256": {
+          "type": "string",
+          "description": "SHA-256 of the PLAINTEXT, hex-encoded, computed before encryption. In this format the same 64 ASCII bytes are also the KEM identity (AAD), so a mismatched value breaks decryption rather than merely failing a comparison.",
+          "pattern": "^[0-9a-fA-F]{64}$"
+        },
+        "chainId": {
+          "type": "integer",
+          "description": "EVM chain id where the slot's KeyRegistry contract is deployed (43113 is Fuji, 43114 is Avalanche C-Chain).",
+          "minimum": 1
+        },
+        "keyRegistry": {
+          "type": "string",
+          "description": "Hex contract address of the BLS key registry. 0x45F432aB5709e9920b5ec349D29663D7200A8C39 on FuJi ",
+          "pattern": "^0x[0-9a-fA-F]{40}$"
+        },
+        "slotId": {
+          "type": "string",
+          "description": "32-byte BLS key slot identifier. Must equal the slot_id embedded in envelope.encryptedAesKey.",
+          "pattern": "^0x[0-9a-fA-F]{64}$"
+        }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "description": "Ciphertext material. All fields are required.",
+      "additionalProperties": false,
+      "required": ["encryptedAesKey", "aesCiphertext", "epoch"],
+      "properties": {
+        "encryptedAesKey": {
+          "$ref": "#/$defs/base64",
+          "type": "string",
+          "description": "Base64 of a v0x02 GroupEnvelope: [version:1 = 0x02][slot_id:32][epoch:i64 LE][identity_len:u16 LE][identity:L][u:96][nonce:12][aead_ct_len:u32 LE][aead_ct:M]. The KEM binds `identity` as AEAD additional data; `u` is a compressed BLS12-381 G2 point and `nonce` is SHA-256(KEM_DOMAIN || \"nonce\" || u)[0..12]. In the sample: identity is the 64 ASCII bytes of manifest.documentSha256, L = 64, and M = 167 (a 151-byte wrapped key blob plus the 16-byte Poly1305 tag).",
+          "minLength": 208,
+          "maxLength": 1399676
+        },
+        "aesCiphertext": {
+          "$ref": "#/$defs/base64",
+          "type": "string",
+          "description": "Base64 AES-256-GCM ciphertext of the payload, encrypted under the data key recovered from encryptedAesKey. There is no separate IV field in this format, so the nonce is prefixed to these bytes or derived by the producer.",
+          "minLength": 24
+        },
+        "epoch": {
+          "type": "integer",
+          "description": "Slot epoch at encryption time. Must equal the epoch embedded in encryptedAesKey, and decryption must use the same value.",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

@@ -6,6 +6,7 @@ import { holderCnf, issueSdJwtVc } from '@t3foundry/tasra-sdk/oid4vp';
 
 import { ApiException } from '../common/api-exception';
 import { GATEWAY_CONFIG, type GatewayConfig } from '../config/configuration';
+import { TasraDcqlService } from './dcql.service';
 
 /**
  * A reader credential is meant to outlive the session that requested it — it is
@@ -26,13 +27,22 @@ const CREDENTIAL_TTL_SECONDS = 365 * 24 * 60 * 60;
  */
 @Injectable()
 export class TasraIssuerService {
-  constructor(@Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig) {}
+  constructor(
+    @Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig,
+    private readonly dcql: TasraDcqlService,
+  ) {}
 
-  issue(input: IssueDocumentReaderRequest): IssueDocumentReaderResponse {
+  async issue(input: IssueDocumentReaderRequest): Promise<IssueDocumentReaderResponse> {
     const seed = this.config.tasra?.issuerSeed;
     if (!seed) {
       throw ApiException.localized('internal_error', 'tasraIssuerNotConfigured');
     }
+
+    // The `key` claim value comes from the slot's DCQL rule, not from the
+    // request's slotId. The rule is the authoritative source of what value a
+    // credential must carry — the slot id is merely the identifier used to
+    // locate the rule.
+    const keyValue = await this.dcql.resolveKeyValue(input.slotId as `0x${string}`);
 
     // The identity holds the private key, so it lives for exactly one mint and
     // is destroyed immediately after — the reference flow's discipline, and the
@@ -50,8 +60,10 @@ export class TasraIssuerService {
         // `sub` claim for this credential type, and a slot policy pinned to the
         // holder would then never match a credential minted here.
         cnf: holderCnf({ did: input.did }),
-        // The `key` claim is what a slot's DCQL rule pins on.
-        claims: { key: input.slotId },
+        // The `key` claim is what a slot's DCQL rule pins on. The value was
+        // resolved from the rule before the identity was created; it is not the
+        // request's slotId.
+        claims: { key: keyValue },
         nowSecs,
         ttlSecs: CREDENTIAL_TTL_SECONDS,
       });
