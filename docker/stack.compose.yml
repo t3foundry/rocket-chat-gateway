@@ -3,7 +3,13 @@
 # `rocketchat.compose.yml` is the lighter option when you only want Rocket.Chat
 # and intend to run the gateway from source with `pnpm dev`.
 #
+# Build the gateway from source (default):
 #   docker compose -f docker/stack.compose.yml up -d --build
+#
+# Pull the published image instead (login first):
+#   echo "$GITHUB_TOKEN" | docker login ghcr.io -u USER --password-stdin
+#   GATEWAY_IMAGE=ghcr.io/t3foundry/rocket-chat-gateway:edge \
+#     docker compose -f docker/stack.compose.yml up -d
 #
 # The web client is a separate repository; point its `VITE_GATEWAY_URL` at
 # http://localhost:4000, or serve it from the same origin behind a proxy.
@@ -79,6 +85,13 @@ services:
       retries: 20
 
   gateway:
+    # Builds from source by default.  To pull the published image instead:
+    #   GATEWAY_IMAGE=ghcr.io/t3foundry/rocket-chat-gateway:edge \
+    #     docker compose -f docker/stack.compose.yml up -d
+    # The image is published on every push to main (:edge) and on every
+    # semver tag (:1.2.3, :1.2, :1, :latest).  Login first:
+    #   echo "$GITHUB_TOKEN" | docker login ghcr.io -u USER --password-stdin
+    image: ${GATEWAY_IMAGE:-open-rocket-chat-gateway}
     build:
       context: ..
       dockerfile: docker/gateway.Dockerfile
