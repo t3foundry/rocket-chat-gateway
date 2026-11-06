@@ -63,8 +63,10 @@ const isJwkObject = (encoded: string): boolean => {
  */
 export const IssueDocumentReaderRequestSchema = z.object({
   /**
-   * Becomes the credential's `key` claim. A slot's DCQL rule pins that claim to
-   * one slot id, so this is what makes the credential usable against it.
+   * Identifies the slot whose access rule the issuer reads to derive the
+   * expected `key` claim value. The slot's DCQL rule pins `key` to a specific
+   * value, and the issuer extracts that value rather than using the slot id
+   * itself.
    */
   slotId: z.string().regex(TASRA_SLOT_ID_PATTERN, 'slotId must be 0x followed by 32 bytes of hex'),
   /**
@@ -99,3 +101,41 @@ export const IssueDocumentReaderResponseSchema = z.object({
   expiresAt: IsoDateTimeSchema,
 });
 export type IssueDocumentReaderResponse = z.infer<typeof IssueDocumentReaderResponseSchema>;
+
+/**
+ * `GET /api/v1/tasra/public-key?slotId=0x...`
+ *
+ * Returns the slot's BLS master public key from the key registry, which a
+ * client can use to IBE-encrypt data to an identity under that slot.  The
+ * `epoch` changes when the slot is re-keyed, so a client should compare it
+ * against the epoch pinned in a previously encrypted blob.
+ */
+export const GetPublicKeyResponseSchema = z.object({
+  /** 96-byte compressed BLS master public key as a `0x`-prefixed hex string. */
+  publicKey: z.string(),
+  /** Monotonically increasing epoch of this key in the registry. */
+  epoch: z.number().int().min(0),
+});
+export type GetPublicKeyResponse = z.infer<typeof GetPublicKeyResponseSchema>;
+
+/**
+ * `GET /api/v1/tasra/deployment`
+ *
+ * The chain identity a `tasra-encrypt/v2` manifest has to name. A client needs
+ * `chainId` and `keyRegistry` before it can write one, and neither is derivable
+ * from the slot id — the same slot id could exist on another chain, under another
+ * registry. Reporting them here is what stops a client from being provisioned
+ * with a hard-coded address that quietly describes a different deployment.
+ */
+export const GetDeploymentResponseSchema = z.object({
+  /**
+   * EVM chain id where the slot's `KeyRegistry` contract is deployed (43113 is
+   * Fuji, 43114 is Avalanche C-Chain). Falls back to the SDK's default chain id
+   * when the gateway has no `TASRA_CHAIN_ID`, which is what the chain client it
+   * reads through does too.
+   */
+  chainId: z.number().int().min(1),
+  /** Hex contract address of the BLS key registry, spelled as a manifest spells it. */
+  keyRegistry: z.string().regex(/^0x[0-9a-fA-F]{40}$/, 'keyRegistry must be a 20-byte hex address'),
+});
+export type GetDeploymentResponse = z.infer<typeof GetDeploymentResponseSchema>;

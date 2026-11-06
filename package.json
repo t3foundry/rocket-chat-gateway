@@ -19,6 +19,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
+    "test:docs": "node docs/encryption-tests/validate-snippets.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,yml,yaml}\"",
     "clean": "turbo run clean && rm -rf node_modules",
@@ -43,10 +44,13 @@
       "@swc/core",
       "unrs-resolver"
     ],
-    "overridesComment": "fastify: two copies make Fastify plugin type augmentations land on a different FastifyInstance than the one @nestjs/platform-fastify passes to register(), so every plugin fails to typecheck. find-my-way: GHSA-c96f-x56v-gq3h (high) affects <=9.6.0, which @nestjs/platform-fastify still resolves transitively; pinned forward until it ships a fixed range.",
+    "overridesComment": "fastify: two copies make Fastify plugin type augmentations land on a different FastifyInstance than the one @nestjs/platform-fastify passes to register(), so every plugin fails to typecheck. find-my-way, fast-uri, @fastify/busboy: high CVEs in transitive deps. fastify, @nestjs/platform-fastify: additional high CVEs. Pinned forward until upstreams ship fixed ranges.",
     "overrides": {
-      "fastify": "5.11.0",
-      "find-my-way": "^9.7.0"
+      "fastify": ">=5.12.2",
+      "find-my-way": "^9.7.0",
+      "fast-uri": ">=4.1.4",
+      "@fastify/busboy": ">=3.2.1",
+      "@nestjs/platform-fastify": "~11.2.4"
     }
   }
 }

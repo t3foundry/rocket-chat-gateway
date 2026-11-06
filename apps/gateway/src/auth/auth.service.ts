@@ -1,4 +1,9 @@
-import type { LoginRequest, OAuthLoginRequest, Session, ServerConnection } from '@t3foundry/open-rocket-chat-api-contract';
+import type {
+  LoginRequest,
+  OAuthLoginRequest,
+  Session,
+  ServerConnection,
+} from '@t3foundry/open-rocket-chat-api-contract';
 import type { LoginResult } from '@t3foundry/open-rocket-chat-rc-rest-client';
 import { toMyProfile } from '@t3foundry/open-rocket-chat-rc-adapter';
 import { Injectable } from '@nestjs/common';

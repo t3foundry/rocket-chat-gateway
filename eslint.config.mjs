@@ -45,4 +45,27 @@ export default tseslint.config(
       'no-console': 'off',
     },
   },
+
+  {
+    // The documentation test is a plain Node script, but it inspects the records
+    // its subjects produce with the same browser primitives they use — `atob`,
+    // `TextDecoder` — so both sets of globals are in play.
+    files: ['docs/encryption-tests/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node, atob: 'readonly', btoa: 'readonly' },
+    },
+  },
+
+  {
+    // Plain Node scripts that live beside the source — slot DCQL reader, one-off
+    // maintenance tasks.  They are not bundled and use bare Node globals.
+    files: ['apps/gateway/test/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 );

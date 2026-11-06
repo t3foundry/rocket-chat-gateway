@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "network": "testnet",
+  "chainId": 43113,
+  "deploymentId": "tasra-fuji-v1",
+  "revision": 1,
+  "status": "active",
+  "protocolVersion": "0.1.0",
+  "verifiedAt": {
+    "blockNumber": "58623992",
+    "blockHash": "0x737fc2b0df49c887328d15763e0cafee1efa7fd98691f76f313a3f691800a233",
+    "timestamp": "2026-09-23T10:46:29Z"
+  },
+  "contracts": [
+    {
+      "name": "KeyRegistry",
+      "address": "0x45F432aB5709e9920b5ec349D29663D7200A8C39",
+      "abi": "contracts/abi/0.1.0/KeyRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x0661dd733f11949413c7025f2a95b4068a82005dae33f98a236d86100f72410d",
+        "blockNumber": "58547841"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0x065640a77a253a12631b1cd00877e98f2616712c",
+        "runtimeCodeHash": "0xb6286d1ef6d8deccf1edcc030a5777cb78c7c7642ad6c7f3b384ceb76120a6ee",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "NodeRegistry",
+      "address": "0x6366BE2f22F9Db9d7405c7E48B75bc415455784E",
+      "abi": "contracts/abi/0.1.0/NodeRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x1b06113dfbeec9e907a3ac5f898a8735d60653a7ae22d80b78455a14558d608b",
+        "blockNumber": "58547824"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0xfdfb2f4ca5b56b3f5ffdaf2148fca4f91407690e",
+        "runtimeCodeHash": "0xb70accaa20ef022eb393f5c15bde72a6db7fd4d9f42ce20ef60d9100feab2d6c",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "Settlement",
+      "address": "0x6756F72d085595B0bF9AfF0a11aB960A75C56feB",
+      "abi": "contracts/abi/0.1.0/Settlement.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0xd8a3ac61f5e3ff233b68a597efe356c9265019bf4b3886c2db5d78553373598b",
+        "blockNumber": "58547846"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0x62e497adfbfd14aa701f6d22494475c6d7d51658",
+        "runtimeCodeHash": "0xd997380d34f95b6c4021f97ffd7f909853e21ebcd022c5f7be7141b32606e2f9",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "AccountantSlashing",
+      "address": "0x135f8c695DeA25141b6b46C79f5ad8b55a62a5E4",
+      "abi": "contracts/abi/0.1.0/AccountantSlashing.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0xf8f2e81d1a0daa026c0aa0b5cdf8437b42d4f5f4e49214bf54b9176fbe273dc9",
+        "blockNumber": "58547852"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0x5f70903ecef47e3a9f14ef4ff46e168f61834510",
+        "runtimeCodeHash": "0xd334e57a5132e16434a64646528fd1d375ab4a132732a6718a298cfd9c5716eb",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "VerifierSetRegistry",
+      "address": "0x7A130C27d774E2167CEa2b18c62c9461b6a3C884",
+      "abi": "contracts/abi/0.1.0/VerifierSetRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x5d4ee1dc4be2efccf634752f7a13525b452f7d54433fbec23c0872fd76356f0c",
+        "blockNumber": "58547862"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0x4d9f27e1595e7e8e68fb9fd46b09080bd3a552d7",
+        "runtimeCodeHash": "0xc1bce25118e634a1cb3f0f2c55a9b6b48fcd27103dce191e2b91af5e2eb71de7",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "AccountantSetRegistry",
+      "address": "0x1875ac248AB2698F6F308d65a2B1336207Ee1738",
+      "abi": "contracts/abi/0.1.0/AccountantSetRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x022cea10c2e3e6f233aac5cbf27be1da74f071efbce9141f46e3bfb10412b6d2",
+        "blockNumber": "58547872"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0xc09a7d35ce402a357a6d88b0a41b70c9e0f51a46",
+        "runtimeCodeHash": "0x04a384578c301fc647b2cf4a5ea7edfe0a67a17ebdf8b3405e70e959ad6c2487",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "KeeperShareRegistry",
+      "address": "0x2aaB4A4B4820b03C598daD1123e7b9dc9263f6B8",
+      "abi": "contracts/abi/0.1.0/KeeperShareRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x15e7184c28151e25b0c52d281de2b47648b84aff86225164b81b24fdc3171d44",
+        "blockNumber": "58547867"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0x31dbfe6e7aec539867f96c5fbfac4aee58e79dc8",
+        "runtimeCodeHash": "0xc5dc23fe33a3be7478a2eb1c0e729efc598026cf660bc603422e15a8ea5e9c80",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "LivenessRegistry",
+      "address": "0x91d69133c6647e630000ea0AFa2c0B4C7d14037e",
+      "abi": "contracts/abi/0.1.0/LivenessRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x1da9f2877b444fa02cd7415450063dfdb99edb3b145c905adc5aba4187b5f0e5",
+        "blockNumber": "58547858"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0xc0ea17eb3afd3bbce958a3e3b1661c611b808575",
+        "runtimeCodeHash": "0xd2eb668aed3a8ab514f4ac211cbc17c07caa6bcd44f9c2284ad78cf84330c7a0",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "ServiceRegistry",
+      "address": "0x2d6c6c2caab8a6f286d7005b58682518580e3acd",
+      "abi": "contracts/abi/0.1.0/ServiceRegistry.json",
+      "runtimeCodeHash": "0x3083be2802f40967ff4e338bb7b3f7cf2fb6d5f073dde684d21a2a44abbbf354",
+      "deployment": {
+        "transactionHash": "0x141b41ef851810e11fcce4e48c157f769d8e6eccd8e7390272571c8a80d9dfa1",
+        "blockNumber": "58547831"
+      },
+      "create2": null,
+      "proxy": {
+        "implementation": "0x58c0c2c4769674ba9ae228eb4b78dfd97fef6039",
+        "runtimeCodeHash": "0xaec794ddd798a29e669520054c2f31fbdb4668c6f21105a2f9abe5da08ed6251",
+        "upgradeAuthority": "0xE5085c8efD06Fc7538796E8F27A6284F30e49A01"
+      }
+    },
+    {
+      "name": "ThresholdRandomBeacon",
+      "address": "0x63dcc43bC70118AFE01E66f26d0e44eee3c4558D",
+      "abi": "contracts/abi/0.1.0/ThresholdRandomBeacon.json",
+      "runtimeCodeHash": "0xbdb67bacb2387051951ce2019dfac5130e74903116a04431f79814ed67f1d1f8",
+      "deployment": {
+        "transactionHash": "0x8904b12f815733d0ad701a63db0f3b5c38c5d9193722dcaf268ca2d7b9a9fadb",
+        "blockNumber": "58547835"
+      },
+      "create2": null,
+      "proxy": null
+    },
+    {
+      "name": "BondingCurve",
+      "address": "0xb3c090fAf314Ac12558d3a799395ee7E89491dA2",
+      "abi": "contracts/abi/0.1.0/BondingCurve.json",
+      "runtimeCodeHash": "0xe5217725abbe66c2d6c9198e634206104d7ed4b8eaef03cb33b1c50c5f7f0702",
+      "deployment": {
+        "transactionHash": "0xb0259db052c6aaa5c5fa8ef31067aa4f9124d561d0962fc5f9ecf765f32a3081",
+        "blockNumber": "58547880"
+      },
+      "create2": null,
+      "proxy": null
+    },
+    {
+      "name": "TasraToken",
+      "address": "0xa83F95fc98A2340A4cBC8a7DD6ec249311bFcC6A",
+      "abi": "contracts/abi/0.1.0/TasraToken.json",
+      "runtimeCodeHash": "0x07f2753c3dd0ddbdaa5caf267003b9f653cf59b7d7234556a7c01bec1080bd8b",
+      "deployment": {
+        "transactionHash": "0x7a4de5baa192fcca95fe1893c05ef3cb2369382b786a5a35587fe648c68e3b1e",
+        "blockNumber": "58547785"
+      },
+      "create2": null,
+      "proxy": null
+    },
+    {
+      "name": "Treasury",
+      "address": "0x78591161544Be47B635E4253F49b1634067f2276",
+      "abi": "contracts/abi/0.1.0/Treasury.json",
+      "runtimeCodeHash": "0x498bb8b1ce50cfc83d6243d52c3bba055535363f60cbce9bb2a322d756fd20e7",
+      "deployment": {
+        "transactionHash": "0xadfdae7c4d446867eeeaa8888e89d3f18b5a3aec50042d2c0bd0c524d7e86bf3",
+        "blockNumber": "58547812"
+      },
+      "create2": null,
+      "proxy": null
+    },
+    {
+      "name": "ERC2771Forwarder",
+      "address": "0x4E0160a9de66407CE9346B48b4487797A4c332EA",
+      "abi": "contracts/abi/0.1.0/ERC2771Forwarder.json",
+      "runtimeCodeHash": "0x19c846566b50fc72561149c2a11910e0e7dbf5bf894985200bd2bfc15bd20318",
+      "deployment": {
+        "transactionHash": "0xdb4e90488f0b0c24b032cbd537ac831edea5a41c24ab324003fe05dd7f47d1e1",
+        "blockNumber": "58547815"
+      },
+      "create2": null,
+      "proxy": null
+    },
+    {
+      "name": "CommitSeedVerify",
+      "address": "0xe7732269995962699F7fE61Ca3Fc5f2F539cFa82",
+      "abi": "contracts/abi/0.1.0/CommitSeedVerify.json",
+      "runtimeCodeHash": "0xbb8459707838bd975596c37f980d3b3ad5d2b3a741d034c16676445b2e8c7ef8",
+      "deployment": {
+        "transactionHash": "0x30ce715afd5eb8b313ccbbeefde08b5a02eeb734d620f0ef2bea6e8923c8003b",
+        "blockNumber": "58578072"
+      },
+      "create2": null,
+      "proxy": null
+    }
+  ],
+  "services": [
+    {
+      "kind": "verifier-agent",
+      "url": "https://agent.t3-foundry.fuji.tasra.network"
+    },
+    {
+      "kind": "relayer",
+      "url": "https://relayer.t3-foundry.fuji.tasra.network"
+    },
+    {
+      "kind": "explorer",
+      "url": "https://explorer.t3-foundry.fuji.tasra.network"
+    }
+  ]
+}

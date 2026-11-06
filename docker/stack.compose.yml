@@ -3,7 +3,13 @@
 # `rocketchat.compose.yml` is the lighter option when you only want Rocket.Chat
 # and intend to run the gateway from source with `pnpm dev`.
 #
+# Build the gateway from source (default):
 #   docker compose -f docker/stack.compose.yml up -d --build
+#
+# Pull the published image instead (login first):
+#   echo "$GITHUB_TOKEN" | docker login ghcr.io -u USER --password-stdin
+#   GATEWAY_IMAGE=ghcr.io/t3foundry/rocket-chat-gateway:edge \
+#     docker compose -f docker/stack.compose.yml up -d
 #
 # The web client is a separate repository; point its `VITE_GATEWAY_URL` at
 # http://localhost:4000, or serve it from the same origin behind a proxy.
@@ -79,6 +85,13 @@ services:
       retries: 20
 
   gateway:
+    # Builds from source by default.  To pull the published image instead:
+    #   GATEWAY_IMAGE=ghcr.io/t3foundry/rocket-chat-gateway:edge \
+    #     docker compose -f docker/stack.compose.yml up -d
+    # The image is published on every push to main (:edge) and on every
+    # semver tag (:1.2.3, :1.2, :1, :latest).  Login first:
+    #   echo "$GITHUB_TOKEN" | docker login ghcr.io -u USER --password-stdin
+    image: ${GATEWAY_IMAGE:-open-rocket-chat-gateway}
     build:
       context: ..
       dockerfile: docker/gateway.Dockerfile
@@ -103,6 +116,13 @@ services:
       # Signs the DocumentReader credentials this gateway mints. An empty value
       # leaves issuance disabled (500), rather than failing the whole stack.
       TASRA_ISSUER_SEED: ${TASRA_ISSUER_SEED:-}
+      # EVM key the gateway uses to initiate OID4VP sessions (DCQL rule reads)
+      # with the verifier agent. The derived EVM address must be a creator or
+      # delegate of every slot it issues credentials for.
+      TASRA_CREATOR_SEED: ${TASRA_CREATOR_SEED:-}
+      TASRA_RPC_URL: ${TASRA_RPC_URL:-}
+      TASRA_CHAIN_ID: ${TASRA_CHAIN_ID:-}
+      TASRA_DEPLOYMENT_ADDRESSES: ${TASRA_DEPLOYMENT_ADDRESSES:-}
     ports:
       - '${GATEWAY_PORT:-4000}:4000'
     healthcheck:

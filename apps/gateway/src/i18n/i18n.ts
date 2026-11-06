@@ -37,6 +37,8 @@ const en = {
   upstreamRejected: 'The Rocket.Chat server rejected the request',
   realtimeUnavailable: 'The realtime connection to Rocket.Chat is unavailable',
   tasraIssuerNotConfigured: 'Credential issuing is not configured on this gateway',
+  tasraNotConfigured: 'Tasra key registry is not configured on this gateway',
+  tasraRuleUnavailable: "The slot's access rule could not be read from the verifier",
 } as const;
 
 export type GatewayMessageKey = keyof typeof en;
@@ -76,6 +78,8 @@ const ja: Record<GatewayMessageKey, string> = {
   upstreamRejected: 'Rocket.Chat サーバーがリクエストを拒否しました',
   realtimeUnavailable: 'Rocket.Chat へのリアルタイム接続を利用できません',
   tasraIssuerNotConfigured: 'このゲートウェイでは資格証明の発行が設定されていません',
+  tasraNotConfigured: 'このゲートウェイではTasraキーレジストリが設定されていません',
+  tasraRuleUnavailable: 'スロットのアクセスルールをベリファイアから取得できませんでした',
 };
 
 const messages: Record<GatewayLocale, Record<GatewayMessageKey, string>> = { en, ja };

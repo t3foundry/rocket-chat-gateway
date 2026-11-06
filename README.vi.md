@@ -60,13 +60,13 @@ Hỗ trợ nhiều máy chủ Rocket.Chat trong một phiên là một phần c�
 
 ## Bạn nhận được gì
 
-| Package                                | Mục đích                                                                                                         |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Package                                          | Mục đích                                                                                                         |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
 | `@t3foundry/open-rocket-chat-api-contract`       | Mô hình dữ liệu, giao kèo HTTP và sự kiện thời gian thực dưới dạng schema Zod. Gateway và các client dùng chung. |
 | `@t3foundry/open-rocket-chat-rc-rest-client`     | Client có đầy đủ kiểu dữ liệu cho REST API của Rocket.Chat, không phụ thuộc thư viện ngoài.                      |
 | `@t3foundry/open-rocket-chat-rc-realtime-client` | Client DDP qua WebSocket, hỗ trợ kết nối lại và khôi phục đăng ký sự kiện.                                       |
 | `@t3foundry/open-rocket-chat-rc-adapter`         | Chuẩn hoá dữ liệu Rocket.Chat thành mô hình dùng chung.                                                          |
-| `apps/gateway`                         | Dịch vụ NestJS + Fastify kết nối các thành phần trên.                                                            |
+| `apps/gateway`                                   | Dịch vụ NestJS + Fastify kết nối các thành phần trên.                                                            |
 
 Bạn cũng có thể dùng riêng từng package. Nếu chỉ cần một SDK Rocket.Chat có kiểu dữ liệu đầy đủ mà không cần gateway, hãy dùng
 `rc-rest-client` và `rc-realtime-client` cho script, bot hoặc một dịch vụ phía máy chủ khác.

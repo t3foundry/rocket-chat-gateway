@@ -29,9 +29,9 @@ export class TasraIssuerController {
    */
   @Post('document-reader')
   @HttpCode(HttpStatus.CREATED)
-  issue(
+  async issue(
     @Body(zodPipe(IssueDocumentReaderRequestSchema)) body: IssueDocumentReaderRequest,
-  ): IssueDocumentReaderResponse {
+  ): Promise<IssueDocumentReaderResponse> {
     return this.issuer.issue(body);
   }
 }
