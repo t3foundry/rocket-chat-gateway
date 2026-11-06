@@ -55,4 +55,17 @@ export default tseslint.config(
       globals: { ...globals.node, atob: 'readonly', btoa: 'readonly' },
     },
   },
+
+  {
+    // Plain Node scripts that live beside the source — slot DCQL reader, one-off
+    // maintenance tasks.  They are not bundled and use bare Node globals.
+    files: ['apps/gateway/test/**/*.mjs'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 );
