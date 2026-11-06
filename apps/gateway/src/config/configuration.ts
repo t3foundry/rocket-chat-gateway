@@ -137,17 +137,14 @@ const EnvSchema = z.object({
    */
   TASRA_DEPLOYMENT_ADDRESSES: z
     .string()
-    .refine(
-      (raw) => {
-        try {
-          const parsed: unknown = JSON.parse(raw);
-          return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed);
-        } catch {
-          return false;
-        }
-      },
-      'must be a JSON object of contract addresses',
-    )
+    .refine((raw) => {
+      try {
+        const parsed: unknown = JSON.parse(raw);
+        return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed);
+      } catch {
+        return false;
+      }
+    }, 'must be a JSON object of contract addresses')
     .optional(),
 });
 

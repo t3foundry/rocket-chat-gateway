@@ -24,16 +24,7 @@
       "type": "object",
       "description": "Record identity, integrity anchor and BLS slot parameters. All fields are required.",
       "additionalProperties": false,
-      "required": [
-        "schema",
-        "recordId",
-        "title",
-        "version",
-        "documentSha256",
-        "chainId",
-        "keyRegistry",
-        "slotId"
-      ],
+      "required": ["schema", "recordId", "title", "version", "documentSha256", "chainId", "keyRegistry", "slotId"],
       "properties": {
         "schema": {
           "const": "tasra-encrypt/v2",

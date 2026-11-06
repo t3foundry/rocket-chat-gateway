@@ -60,13 +60,13 @@
 
 ## 提供されるもの
 
-| パッケージ                             | 役割                                                                                                  |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| パッケージ                                       | 役割                                                                                                  |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | `@t3foundry/open-rocket-chat-api-contract`       | データモデル、HTTP API、リアルタイムイベントを Zod スキーマで定義。ゲートウェイとクライアントで共有。 |
 | `@t3foundry/open-rocket-chat-rc-rest-client`     | Rocket.Chat REST API 向けの、型付きで依存関係のないクライアント。                                     |
 | `@t3foundry/open-rocket-chat-rc-realtime-client` | 再接続とサブスクリプション復旧に対応した DDP-over-WebSocket クライアント。                            |
 | `@t3foundry/open-rocket-chat-rc-adapter`         | Rocket.Chat のレコードをドメインモデルへ正規化。                                                      |
-| `apps/gateway`                         | それらを束ねる NestJS + Fastify サービス。                                                            |
+| `apps/gateway`                                   | それらを束ねる NestJS + Fastify サービス。                                                            |
 
 各パッケージは単体でも使えます。ゲートウェイは不要で型付きの Rocket.Chat SDK だけが欲しい場合は、
 スクリプト・ボット・別のサーバーサイドサービス向けに `rc-rest-client` と `rc-realtime-client` を使ってください。

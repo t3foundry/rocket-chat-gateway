@@ -60,8 +60,8 @@ Pairs with **client 0.1.0**. This is a `0.x` release: it has run in production a
 
 **Packages published from this repository at 0.1.0** — usable on their own; take the two clients if you only want a typed Rocket.Chat SDK for a script, a bot or another server-side service.
 
-| Package                                | What it is                                                                                     |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Package                                          | What it is                                                                                     |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | `@t3foundry/open-rocket-chat-api-contract`       | Domain models, HTTP contract and realtime events as zod schemas, shared by gateway and clients |
 | `@t3foundry/open-rocket-chat-rc-rest-client`     | Typed, dependency-free client for the Rocket.Chat REST API                                     |
 | `@t3foundry/open-rocket-chat-rc-realtime-client` | DDP-over-WebSocket client with reconnect and subscription recovery                             |

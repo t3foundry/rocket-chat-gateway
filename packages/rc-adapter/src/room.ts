@@ -1,4 +1,10 @@
-import type { Room, RoomSummary, RoomType, RoomVisibility, UserSummary } from '@t3foundry/open-rocket-chat-api-contract';
+import type {
+  Room,
+  RoomSummary,
+  RoomType,
+  RoomVisibility,
+  UserSummary,
+} from '@t3foundry/open-rocket-chat-api-contract';
 import type { RcRoom, RcSubscription } from '@t3foundry/open-rocket-chat-rc-rest-client';
 
 import { toIsoString, type AdapterContext } from './context.js';

@@ -314,7 +314,7 @@ Two consequences follow, and both are easy to get wrong:
 
 The SDK's identity and signing adapters work on **raw 32-byte key material** — a
 P-256 scalar or an Ed25519 seed (`TasraIdentity`, `HolderKey`, `JwsSigner`) — not on
-a `CryptoKey`. A client that keeps its key in `crypto.subtle` therefore we will use an extractable key to call 
+a `CryptoKey`. A client that keeps its key in `crypto.subtle` therefore we will use an extractable key to call
 `createIdentity()` or presents a credential:
 
 - an **extractable** key can be exported once with `crypto.subtle.exportKey('jwk', …)`,
@@ -627,7 +627,7 @@ Two behaviours worth designing around:
 | `500 internal_error`, `tasraNotConfigured`         | Gateway cannot report or read its deployment: `TASRA_DEPLOYMENT_ADDRESSES` absent or missing `KeyRegistry` (deployment endpoint), or no `TASRA_RPC_URL` / a failed RPC call (public-key endpoint) |
 | `500 internal_error`, `tasraIssuerNotConfigured`   | Gateway has no `TASRA_ISSUER_SEED`; it cannot mint credentials                                                                                                                                    |
 | `401 unauthorized` on the credential endpoint      | No or expired gateway session                                                                                                                                                                     |
-| Verifier refuses: no credential satisfies the rule | Credential's issuer, `vct` or `key` claim does not match the slot rule; the `key` value comes from the rule itself |
+| Verifier refuses: no credential satisfies the rule | Credential's issuer, `vct` or `key` claim does not match the slot rule; the `key` value comes from the rule itself                                                                                |
 | Envelope identity mismatch                         | `documentSha256` was altered, or the producer derived identity differently                                                                                                                        |
 | Envelope epoch mismatch                            | Manifest and envelope disagree; the record was edited outside a client                                                                                                                            |
 | AES-GCM authentication failure (`OperationError`)  | Wrong AAD derivation, wrong IV offset, or a truncated `aesCiphertext`                                                                                                                             |

@@ -37,10 +37,9 @@ export class TasraDcqlService {
   private readonly verifierAgentUrl: string;
 
   constructor(@Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig) {
-    const { deployment, verifierAgentUrl } = resolveApplicationManifest(
-      networkManifest as ApplicationManifest,
-      { coordinator: 'lowest-operator-id' },
-    );
+    const { deployment, verifierAgentUrl } = resolveApplicationManifest(networkManifest as ApplicationManifest, {
+      coordinator: 'lowest-operator-id',
+    });
 
     if (!verifierAgentUrl) {
       throw new Error('network.json has no verifier-agent service entry');

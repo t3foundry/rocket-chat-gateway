@@ -26,7 +26,9 @@ export class PublicKeyController {
    */
   @Get('public-key')
   @HttpCode(HttpStatus.OK)
-  async lookup(@Query(zodPipe(SlotIdQuerySchema)) query: z.infer<typeof SlotIdQuerySchema>): Promise<GetPublicKeyResponse> {
+  async lookup(
+    @Query(zodPipe(SlotIdQuerySchema)) query: z.infer<typeof SlotIdQuerySchema>,
+  ): Promise<GetPublicKeyResponse> {
     return this.service.lookup(query.slotId);
   }
 }

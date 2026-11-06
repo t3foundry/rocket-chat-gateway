@@ -60,13 +60,13 @@ Several Rocket.Chat servers behind one session is the default shape rather than 
 
 ## What you get
 
-| Package                                | Purpose                                                                                         |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Package                                          | Purpose                                                                                         |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | `@t3foundry/open-rocket-chat-api-contract`       | Domain models, HTTP contract and realtime events as zod schemas. Shared by gateway and clients. |
 | `@t3foundry/open-rocket-chat-rc-rest-client`     | Typed, dependency-free client for the Rocket.Chat REST API.                                     |
 | `@t3foundry/open-rocket-chat-rc-realtime-client` | DDP-over-WebSocket client with reconnect and subscription recovery.                             |
 | `@t3foundry/open-rocket-chat-rc-adapter`         | Normalises Rocket.Chat records into the domain model.                                           |
-| `apps/gateway`                         | The NestJS + Fastify service that ties them together.                                           |
+| `apps/gateway`                                   | The NestJS + Fastify service that ties them together.                                           |
 
 The packages are usable on their own. If you only want a typed Rocket.Chat SDK and no gateway, take
 `rc-rest-client` and `rc-realtime-client` — for a script, a bot, or another server-side service.
