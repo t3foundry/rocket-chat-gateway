@@ -7,6 +7,7 @@ import {
 } from '@t3foundry/tasra-sdk/app';
 import { fetchRequestObject, openVerifierAgentSession } from '@t3foundry/tasra-sdk/oid4vp';
 import { Inject, Injectable } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
 import { ApiException } from '../common/api-exception';
 import { GATEWAY_CONFIG, type GatewayConfig } from '../config/configuration';
@@ -36,7 +37,24 @@ export class TasraDcqlService {
   private readonly deployment: Readonly<TasraDeployment>;
   private readonly verifierAgentUrl: string;
 
-  constructor(@Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig) {
+  /**
+   * Resolved DCQL key values are cached permanently. A slot's DCQL rule is a
+   * pinned on-chain commitment whose `key` claim never changes — re-opening an
+   * OID4VP session on every credential-issuance request wastes two network
+   * round-trips for a value that is always the same. The cache serves the
+   * resolved value for the lifetime of the gateway process.
+   *
+   * A cached value is also served on fetch failure so a transient verifier
+   * outage does not block credential issuance for slots already resolved.
+   */
+  private readonly cache = new Map<string, string>();
+
+  constructor(
+    @Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig,
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(TasraDcqlService.name);
+
     const { deployment, verifierAgentUrl } = resolveApplicationManifest(networkManifest as ApplicationManifest, {
       coordinator: 'lowest-operator-id',
     });
@@ -50,16 +68,39 @@ export class TasraDcqlService {
   }
 
   /**
-   * Open a short-lived OID4VP session with the verifier, fetch the signed
-   * request object, and extract the value the slot's DCQL rule pins on the
-   * `key` claim.
+   * Return the value the slot's DCQL rule pins on the `key` claim.
+   *
+   * On first call for a given slot the gateway opens an OID4VP session with the
+   * verifier agent, fetches the signed request object, and extracts the pinned
+   * `key` value. The result is cached permanently — subsequent calls for the
+   * same slot return it immediately without any network round-trips.
    *
    * @param slotId - The 32-byte slot identifier the credential is for.
    * @returns The expected `key` claim value the VC must carry.
    * @throws ApiException (internal_error / tasraRuleUnavailable) when the rule
-   *   cannot be read or does not pin `key` unambiguously.
+   *   cannot be read or does not pin `key` unambiguously, and no cached value
+   *   exists.
    */
   async resolveKeyValue(slotId: `0x${string}`): Promise<string> {
+    const cached = this.cache.get(slotId);
+    if (cached !== undefined) return cached;
+
+    try {
+      const keyValue = await this.fetchKeyValue(slotId);
+      this.cache.set(slotId, keyValue);
+      return keyValue;
+    } catch (error) {
+      // A fetch failure with no cached entry is fatal — there is nothing to
+      // fall back to. The caller receives the original error.
+      throw error;
+    }
+  }
+
+  /**
+   * The uncached work: open a session, fetch the request object, extract the
+   * pinned `key` value. Never called when the slot is already cached.
+   */
+  private async fetchKeyValue(slotId: `0x${string}`): Promise<string> {
     const wallet = this.getWallet();
 
     let requestUri: string;
