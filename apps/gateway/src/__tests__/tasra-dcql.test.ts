@@ -1,8 +1,14 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiException } from '../common/api-exception';
 import type { GatewayConfig } from '../config/configuration';
 import { TasraDcqlService } from '../tasra/dcql.service';
+import type { TasraDeploymentService } from '../tasra/deployment.service';
+import { TasraSlotRuleService } from '../tasra/slot-rule.service';
 
 // ---------------------------------------------------------------------------
 // SDK mocks — controlled per-test via mockImplementation in beforeEach.
@@ -21,12 +27,19 @@ vi.mock('@t3foundry/tasra-sdk/app', () => ({
     },
     verifierAgentUrl: 'https://verifier.example',
   }),
-  createLocalWallet: vi.fn().mockReturnValue({ signer: {} }),
+  createLocalWallet: vi.fn(),
+}));
+
+vi.mock('@t3foundry/tasra-sdk/committee', () => ({
+  createDecryptionRecipient: vi.fn(),
+  decryptionBinding: vi.fn(),
 }));
 
 vi.mock('../tasra/network.json', () => ({ default: {} }));
 
 // Import after mocks so the factory wrappers reference the same vi.fn instances.
+import { createLocalWallet } from '@t3foundry/tasra-sdk/app';
+import { createDecryptionRecipient, decryptionBinding } from '@t3foundry/tasra-sdk/committee';
 import { openVerifierAgentSession, fetchRequestObject } from '@t3foundry/tasra-sdk/oid4vp';
 
 // ---------------------------------------------------------------------------
@@ -39,7 +52,10 @@ const SLOT_B = `0x${'bb'.repeat(32)}` as `0x${string}`;
 const KEY_A = `0x${'a1'.repeat(32)}`;
 const KEY_B = `0x${'b1'.repeat(32)}`;
 
-const CREATOR_SEED = `0x${'fe'.repeat(32)}`;
+/** The slot's key epoch on chain, which the session's decrypt binding must name. */
+const SLOT_EPOCH = 7;
+const RECIPIENT = { recipient: { suite: 'test', public_key: '0x01' } };
+const BINDING = { payloadDigest: new Uint8Array(32).fill(9), decryption: { ciphertext_epoch: SLOT_EPOCH } };
 
 const DUMMY_URI = 'https://verifier.example/request/session-abc';
 
@@ -58,9 +74,22 @@ const dcqlPinning = (key: string) => ({
   },
 });
 
-const config: GatewayConfig = {
-  tasra: { creatorSeed: CREATOR_SEED },
-} as GatewayConfig;
+// No creator key anywhere: the gateway opens rule-reading sessions with a random key.
+const config: GatewayConfig = { tasra: {} } as GatewayConfig;
+
+const getKeySlot = vi.fn();
+/** The configured chain: the network of the gateway manifest unless a test says otherwise. */
+const chainOn = (chainId: number): TasraDeploymentService =>
+  ({
+    describe: () => ({ chainId, keyRegistry: '0x0000000000000000000000000000000000000001' }),
+    getClient: () => ({ readers: { keyRegistry: { getKeySlot } } }),
+  }) as unknown as TasraDeploymentService;
+
+const rulesFile = (rules: Record<string, { rule: string; salt?: string }>): string => {
+  const path = join(mkdtempSync(join(tmpdir(), 'dcql-rules-')), 'rules.json');
+  writeFileSync(path, JSON.stringify(rules));
+  return path;
+};
 
 const noopLogger = {
   setContext: vi.fn(),
@@ -82,7 +111,81 @@ describe('TasraDcqlService', () => {
     vi.mocked(openVerifierAgentSession).mockResolvedValue({ requestUri: DUMMY_URI } as any);
     vi.mocked(fetchRequestObject).mockResolvedValue(dcqlPinning(KEY_A) as any);
 
-    service = new TasraDcqlService(config, noopLogger);
+    getKeySlot.mockResolvedValue({ exists: true, epoch: BigInt(SLOT_EPOCH) });
+    vi.mocked(createDecryptionRecipient).mockResolvedValue(RECIPIENT as any);
+    vi.mocked(decryptionBinding).mockReturnValue(BINDING as any);
+    // A new signer object per call, so a test can tell one key from the next.
+    vi.mocked(createLocalWallet).mockImplementation(() => ({ signer: {} }) as any);
+
+    service = new TasraDcqlService(config, noopLogger, new TasraSlotRuleService(config), chainOn(43113));
+  });
+
+  // -----------------------------------------------------------------------
+  // Reading the rule from the network
+  // -----------------------------------------------------------------------
+
+  it('opens the session with a fresh random key, never a configured one', async () => {
+    await service.resolveKeyValue(SLOT_A);
+    await service.resolveKeyValue(SLOT_B);
+
+    // `createLocalWallet(deployment)` with no private key generates one.
+    expect(createLocalWallet).toHaveBeenCalledTimes(2);
+    for (const call of vi.mocked(createLocalWallet).mock.calls) expect(call).toHaveLength(1);
+
+    const [first, second] = vi.mocked(openVerifierAgentSession).mock.calls.map(([options]) => options.signer);
+    expect(first).toBeDefined();
+    expect(first).not.toBe(second);
+  });
+
+  it('names a decrypt of the slot at its on-chain key epoch, and presents nothing', async () => {
+    await service.resolveKeyValue(SLOT_A);
+
+    expect(getKeySlot).toHaveBeenCalledWith(SLOT_A);
+    expect(decryptionBinding).toHaveBeenCalledWith(new Uint8Array(32), SLOT_EPOCH, RECIPIENT);
+    expect(openVerifierAgentSession).toHaveBeenCalledWith(
+      expect.objectContaining({
+        verifierAgentUrl: 'https://verifier.example',
+        chainId: 43113,
+        slotId: SLOT_A,
+        action: 'decrypt',
+        payloadDigest: BINDING.payloadDigest,
+        decryption: BINDING.decryption,
+      }),
+    );
+    // The request object is all the gateway reads: the session is abandoned there.
+    expect(fetchRequestObject).toHaveBeenCalledWith(DUMMY_URI);
+  });
+
+  it('refuses to read a rule from the manifest network when the configured chain is another one', async () => {
+    const elsewhere = new TasraDcqlService(config, noopLogger, new TasraSlotRuleService(config), chainOn(43112));
+
+    await expect(elsewhere.resolveKeyValue(SLOT_A)).rejects.toThrow(ApiException);
+    expect(openVerifierAgentSession).not.toHaveBeenCalled();
+  });
+
+  // -----------------------------------------------------------------------
+  // Reading the rule the gateway holds
+  // -----------------------------------------------------------------------
+
+  it('reads a held rule directly, without the chain or a session', async () => {
+    const rule = JSON.stringify(dcqlPinning(KEY_B).claims.dcql_query);
+    const held: GatewayConfig = { tasra: { slotRulesFile: rulesFile({ [SLOT_A]: { rule } }) } } as GatewayConfig;
+    const withRules = new TasraDcqlService(held, noopLogger, new TasraSlotRuleService(held), chainOn(43112));
+
+    expect(await withRules.resolveKeyValue(SLOT_A)).toBe(KEY_B);
+    expect(getKeySlot).not.toHaveBeenCalled();
+    expect(openVerifierAgentSession).not.toHaveBeenCalled();
+    expect(createLocalWallet).not.toHaveBeenCalled();
+  });
+
+  it('refuses a held rule that pins no key', async () => {
+    const held: GatewayConfig = {
+      tasra: { slotRulesFile: rulesFile({ [SLOT_A]: { rule: JSON.stringify({ credentials: [] }) } }) },
+    } as GatewayConfig;
+    const withRules = new TasraDcqlService(held, noopLogger, new TasraSlotRuleService(held), chainOn(43113));
+
+    await expect(withRules.resolveKeyValue(SLOT_A)).rejects.toThrow(ApiException);
+    expect(openVerifierAgentSession).not.toHaveBeenCalled();
   });
 
   // -----------------------------------------------------------------------

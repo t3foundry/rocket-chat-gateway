@@ -29,7 +29,7 @@
     "@t3foundry/open-rocket-chat-rc-adapter": "workspace:*",
     "@t3foundry/open-rocket-chat-rc-realtime-client": "workspace:*",
     "@t3foundry/open-rocket-chat-rc-rest-client": "workspace:*",
-    "@t3foundry/tasra-sdk": "0.3.0-next.1",
+    "@t3foundry/tasra-sdk": "file:../../../.sdk-packs/0.5.0/t3foundry-tasra-sdk-0.5.0.tgz",
     "fastify": "^5.11.0",
     "ioredis": "^6.0.0",
     "nestjs-pino": "^4.6.1",

@@ -104,25 +104,6 @@ const EnvSchema = z.object({
     .refine((value) => value === '' || /^0x[0-9a-fA-F]{64}$/.test(value), 'must be 0x followed by 32 bytes of hex')
     .optional(),
 
-  /**
-   * EVM signing key for OID4VP operations the gateway initiates to read a
-   * slot's DCQL rule from the verifier agent. A 32-byte hex seed interpreted
-   * as a secp256k1 private key.
-   *
-   * The derived EVM address must be accepted by the slot's policy — as the
-   * slot creator, or as a delegate signer — otherwise the verifier refuses
-   * the session and credential issuance fails.
-   *
-   * Distinct from `TASRA_ISSUER_SEED`, which derives an Ed25519 `did:jwk`
-   * identifier for signing credentials. The same 32-byte value can be used
-   * for both when the deployment's slot policies accept the resulting EVM
-   * address, but keeping them separate is the safer default.
-   */
-  TASRA_CREATOR_SEED: z
-    .string()
-    .refine((value) => value === '' || /^0x[0-9a-fA-F]{64}$/.test(value), 'must be 0x followed by 32 bytes of hex')
-    .optional(),
-
   /** JSON-RPC endpoint of the chain where the Tasra key registry is deployed. */
   TASRA_RPC_URL: z.string().url().optional(),
   /**
@@ -145,6 +126,30 @@ const EnvSchema = z.object({
         return false;
       }
     }, 'must be a JSON object of contract addresses')
+    .optional(),
+
+  /**
+   * Path to a JSON file of slot access rules the gateway holds itself:
+   * `{ "<slotId>": { "rule": "<the slot's rule, as a JSON string>" } }`.
+   *
+   * The gateway reads a rule only to learn which `key` claim value a reader
+   * credential must carry; it serves the rule to nobody. Optional: for a slot
+   * not listed, the gateway reads the rule from the network instead.
+   *
+   * A file rather than a value because a rule is itself JSON.
+   */
+  TASRA_SLOT_RULES_FILE: z.string().min(1).optional(),
+
+  /**
+   * The public address of this gateway's `tasra/status/document-reader` route,
+   * as the network's verifiers reach it. Issued credentials name it as their
+   * revocation status list. Verifiers fetch it over public HTTPS; a private
+   * address works only where each verifier operator has approved that exact URL.
+   */
+  TASRA_STATUS_LIST_URL: z
+    .string()
+    .url()
+    .refine((value) => !value.includes('#') && !value.includes('?'), 'must carry no query or fragment')
     .optional(),
 });
 
@@ -171,10 +176,11 @@ export type GatewayConfig = {
   realtimeIdleTimeoutMs: number;
   tasra?: {
     issuerSeed?: string;
-    creatorSeed?: string;
     rpcUrl?: string;
     chainId?: number;
     deploymentAddresses?: string;
+    slotRulesFile?: string;
+    statusListUrl?: string;
   };
 };
 
@@ -220,14 +226,15 @@ export const loadConfig = (env: NodeJS.ProcessEnv = process.env): GatewayConfig 
     maxUploadBytes: value.MAX_UPLOAD_BYTES,
     uploadTimeoutMs: value.UPLOAD_TIMEOUT_SECONDS * 1_000,
     realtimeIdleTimeoutMs: value.REALTIME_IDLE_TIMEOUT_SECONDS * 1_000,
-    ...(value.TASRA_ISSUER_SEED || value.TASRA_CREATOR_SEED || value.TASRA_RPC_URL
+    ...(value.TASRA_ISSUER_SEED || value.TASRA_RPC_URL || value.TASRA_SLOT_RULES_FILE || value.TASRA_STATUS_LIST_URL
       ? {
           tasra: {
             ...(value.TASRA_ISSUER_SEED ? { issuerSeed: value.TASRA_ISSUER_SEED } : {}),
-            ...(value.TASRA_CREATOR_SEED ? { creatorSeed: value.TASRA_CREATOR_SEED } : {}),
             ...(value.TASRA_RPC_URL ? { rpcUrl: value.TASRA_RPC_URL } : {}),
             ...(value.TASRA_CHAIN_ID ? { chainId: value.TASRA_CHAIN_ID } : {}),
             ...(value.TASRA_DEPLOYMENT_ADDRESSES ? { deploymentAddresses: value.TASRA_DEPLOYMENT_ADDRESSES } : {}),
+            ...(value.TASRA_SLOT_RULES_FILE ? { slotRulesFile: value.TASRA_SLOT_RULES_FILE } : {}),
+            ...(value.TASRA_STATUS_LIST_URL ? { statusListUrl: value.TASRA_STATUS_LIST_URL } : {}),
           },
         }
       : {}),
