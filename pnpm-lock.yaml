@@ -79,8 +79,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/rc-rest-client
       '@t3foundry/tasra-sdk':
-        specifier: file:../../../.sdk-packs/0.5.0/t3foundry-tasra-sdk-0.5.0.tgz
-        version: file:../.sdk-packs/0.5.0/t3foundry-tasra-sdk-0.5.0.tgz(typescript@5.9.3)(zod@4.6.7)
+        specifier: 0.5.0-preview
+        version: 0.5.0-preview(typescript@5.9.3)(zod@4.6.7)
       fastify:
         specifier: '>=5.12.2'
         version: 5.12.8
@@ -1046,9 +1046,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@t3foundry/tasra-sdk@file:../.sdk-packs/0.5.0/t3foundry-tasra-sdk-0.5.0.tgz':
-    resolution: {integrity: sha512-zR7vwQ45gKKj6Gmxil1gQ9O4BsQ2VSpfvRkVXoHm4t8cWFKaYvGnn2jzfpv8lQzkHLoGh/I8uXvoA+F0S8wYgA==, tarball: file:../.sdk-packs/0.5.0/t3foundry-tasra-sdk-0.5.0.tgz}
-    version: 0.5.0
+  '@t3foundry/tasra-sdk@0.5.0-preview':
+    resolution: {integrity: sha512-QiXGiA1JowC3CuDUEy1Bf1WR1AYXCF6Glp52bpnVxuPJ3FwJw9UqJMIs7/kVMEkXI8yNWB+SNCZdbbMxW64xOw==}
     engines: {node: '>=22.12'}
 
   '@tokenizer/inflate@0.4.1':
@@ -3502,7 +3501,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@t3foundry/tasra-sdk@file:../.sdk-packs/0.5.0/t3foundry-tasra-sdk-0.5.0.tgz(typescript@5.9.3)(zod@4.6.7)':
+  '@t3foundry/tasra-sdk@0.5.0-preview(typescript@5.9.3)(zod@4.6.7)':
     dependencies:
       '@hpke/chacha20poly1305': 1.7.1
       '@hpke/core': 1.9.0
