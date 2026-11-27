@@ -5,6 +5,7 @@ import { ApiException } from '../common/api-exception';
 import { loadConfig, type GatewayConfig } from '../config/configuration';
 import type { TasraDcqlService } from '../tasra/dcql.service';
 import { TasraIssuerService } from '../tasra/issuer.service';
+import { TasraStatusListService } from '../tasra/status-list.service';
 
 /**
  * A throwaway fixture seed, written as readable ASCII so nobody can mistake it
@@ -51,6 +52,10 @@ const failingDcql = {
   },
 } as unknown as TasraDcqlService;
 
+/** The issuer over `config`, with the status list that config describes. */
+const issuerWith = (config: GatewayConfig, dcql: TasraDcqlService): TasraIssuerService =>
+  new TasraIssuerService(config, dcql, new TasraStatusListService(config));
+
 const captureError = async (run: () => Promise<unknown>): Promise<unknown> => {
   try {
     await run();
@@ -62,7 +67,7 @@ const captureError = async (run: () => Promise<unknown>): Promise<unknown> => {
 
 describe('TasraIssuerService', () => {
   it('derives the configured issuer DID from the seed', async () => {
-    const service = new TasraIssuerService(configWith(FIXTURE_SEED), okDcql);
+    const service = issuerWith(configWith(FIXTURE_SEED), okDcql);
 
     const result = await service.issue({ slotId: SLOT_ID, did: HOLDER_DID });
 
@@ -71,7 +76,7 @@ describe('TasraIssuerService', () => {
   });
 
   it('mints a holder-bound DocumentReader credential whose key claim comes from the DCQL rule', async () => {
-    const service = new TasraIssuerService(configWith(FIXTURE_SEED), okDcql);
+    const service = issuerWith(configWith(FIXTURE_SEED), okDcql);
 
     const result = await service.issue({ slotId: SLOT_ID, did: HOLDER_DID });
     const claims = verifyCredential(result.credential, { issuer: FIXTURE_ISSUER_DID, type: 'DocumentReader' });
@@ -91,7 +96,7 @@ describe('TasraIssuerService', () => {
   });
 
   it('reports an expiry that matches the credential lifetime instead of drifting from it', async () => {
-    const service = new TasraIssuerService(configWith(FIXTURE_SEED), okDcql);
+    const service = issuerWith(configWith(FIXTURE_SEED), okDcql);
 
     const result = await service.issue({ slotId: SLOT_ID, did: HOLDER_DID });
     const claims = verifyCredential(result.credential, { issuer: FIXTURE_ISSUER_DID });
@@ -103,7 +108,7 @@ describe('TasraIssuerService', () => {
   });
 
   it('refuses to mint when no seed is configured', async () => {
-    const service = new TasraIssuerService(configWith(), okDcql);
+    const service = issuerWith(configWith(), okDcql);
 
     const error = await captureError(() => service.issue({ slotId: SLOT_ID, did: HOLDER_DID }));
 
@@ -117,7 +122,7 @@ describe('TasraIssuerService', () => {
     // an empty string in `docker/stack.compose.yml`; the service, not the schema,
     // is what has to refuse it. The config is built inline so a truthiness check
     // in `configWith` cannot quietly turn this into the "absent" case.
-    const service = new TasraIssuerService({ tasra: { issuerSeed: '' } } as GatewayConfig, okDcql);
+    const service = issuerWith({ tasra: { issuerSeed: '' } } as GatewayConfig, okDcql);
 
     const error = await captureError(() => service.issue({ slotId: SLOT_ID, did: HOLDER_DID }));
 
@@ -127,7 +132,7 @@ describe('TasraIssuerService', () => {
   });
 
   it('refuses to mint when the DCQL rule cannot be read', async () => {
-    const service = new TasraIssuerService(configWith(FIXTURE_SEED), failingDcql);
+    const service = issuerWith(configWith(FIXTURE_SEED), failingDcql);
 
     const error = await captureError(() => service.issue({ slotId: SLOT_ID, did: HOLDER_DID }));
 

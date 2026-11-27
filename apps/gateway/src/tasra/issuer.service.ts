@@ -7,6 +7,7 @@ import { holderCnf, issueSdJwtVc } from '@t3foundry/tasra-sdk/oid4vp';
 import { ApiException } from '../common/api-exception';
 import { GATEWAY_CONFIG, type GatewayConfig } from '../config/configuration';
 import { TasraDcqlService } from './dcql.service';
+import { TasraStatusListService } from './status-list.service';
 
 /**
  * A reader credential is meant to outlive the session that requested it — it is
@@ -30,6 +31,7 @@ export class TasraIssuerService {
   constructor(
     @Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig,
     private readonly dcql: TasraDcqlService,
+    private readonly statusList: TasraStatusListService,
   ) {}
 
   async issue(input: IssueDocumentReaderRequest): Promise<IssueDocumentReaderResponse> {
@@ -63,7 +65,12 @@ export class TasraIssuerService {
         // The `key` claim is what a slot's DCQL rule pins on. The value was
         // resolved from the rule before the identity was created; it is not the
         // request's slotId.
-        claims: { key: keyValue },
+        //
+        // With a status list configured the credential also names its revocation
+        // status, in the clear: a verifier must read it without a disclosure, and
+        // a prepaid Tasra network refuses a credential that names none.
+        claims: { key: keyValue, ...(this.statusList.url ? { credentialStatus: this.statusList.entry() } : {}) },
+        ...(this.statusList.url ? { plain: ['credentialStatus'] } : {}),
         nowSecs,
         ttlSecs: CREDENTIAL_TTL_SECONDS,
       });

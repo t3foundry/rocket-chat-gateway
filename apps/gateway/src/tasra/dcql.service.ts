@@ -5,32 +5,40 @@ import {
   type ApplicationManifest,
   type TasraDeployment,
 } from '@t3foundry/tasra-sdk/app';
+import { createDecryptionRecipient, decryptionBinding } from '@t3foundry/tasra-sdk/committee';
 import { fetchRequestObject, openVerifierAgentSession } from '@t3foundry/tasra-sdk/oid4vp';
 import { Inject, Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 
 import { ApiException } from '../common/api-exception';
 import { GATEWAY_CONFIG, type GatewayConfig } from '../config/configuration';
+import { TasraDeploymentService } from './deployment.service';
+import { TasraSlotRuleService } from './slot-rule.service';
 // eslint-disable-next-line no-restricted-imports
 import networkManifest from './network.json';
 
 /**
- * A fresh 32 zero-bytes payload digest used as a placeholder operation payload,
- * because the session exists only to obtain the DCQL rule — no real operation is
- * authorized. The digest is never stored and the session is abandoned immediately.
+ * A placeholder content digest (32 zero bytes) for the operation the session
+ * names, because the session exists only to obtain the DCQL rule: nothing is
+ * presented, so no operation is ever authorized. The session is abandoned as
+ * soon as its request object has been read.
  */
-const DUMMY_DIGEST = new Uint8Array(32);
+const PLACEHOLDER_CONTENT_DIGEST = new Uint8Array(32);
 
 /**
- * Reads a slot's DCQL rule from the verifier agent and extracts the expected
- * `key` claim value the credential must carry.
+ * Resolves the `key` claim value a slot's DCQL rule pins, which a reader
+ * credential for that slot must carry.
  *
- * The chain stores only a salted commitment, never the rule itself. The rule is
- * obtainable only by opening an OID4VP session with the verifier agent listed in
- * `network.json`, signing the operation with the gateway's creator key as an
- * EVM account. The session delivers the request object whose `dcql_query` carries
- * the committed rule — once extracted, the session is abandoned without waiting
- * for a wallet.
+ * Two sources, in order:
+ *
+ *  1. the gateway's own rules file (`TASRA_SLOT_RULES_FILE`): the rule is read
+ *     directly, with no network round-trip;
+ *  2. the network: the chain stores only a salted commitment, never the rule, but
+ *     the verifier agent's signed request object for a slot carries the rule's
+ *     query. Any key may open a session (the slot's rule decides who is admitted
+ *     when a credential is presented), so the gateway signs with a fresh random
+ *     key, reads the request object and abandons the session without presenting.
+ *     It holds no key of the slot's creator.
  */
 @Injectable()
 export class TasraDcqlService {
@@ -52,6 +60,8 @@ export class TasraDcqlService {
   constructor(
     @Inject(GATEWAY_CONFIG) private readonly config: GatewayConfig,
     private readonly logger: PinoLogger,
+    private readonly slotRules: TasraSlotRuleService,
+    private readonly chain: TasraDeploymentService,
   ) {
     this.logger.setContext(TasraDcqlService.name);
 
@@ -70,10 +80,11 @@ export class TasraDcqlService {
   /**
    * Return the value the slot's DCQL rule pins on the `key` claim.
    *
-   * On first call for a given slot the gateway opens an OID4VP session with the
-   * verifier agent, fetches the signed request object, and extracts the pinned
-   * `key` value. The result is cached permanently — subsequent calls for the
-   * same slot return it immediately without any network round-trips.
+   * On first call for a given slot the gateway reads the rule (from its own
+   * rules file, else from the verifier agent's signed request object) and
+   * extracts the pinned `key` value. The result is cached permanently —
+   * subsequent calls for the same slot return it immediately without any
+   * network round-trips.
    *
    * @param slotId - The 32-byte slot identifier the credential is for.
    * @returns The expected `key` claim value the VC must carry.
@@ -97,22 +108,57 @@ export class TasraDcqlService {
   }
 
   /**
-   * The uncached work: open a session, fetch the request object, extract the
-   * pinned `key` value. Never called when the slot is already cached.
+   * The uncached work: read the rule (held, else from a session's request
+   * object) and extract the pinned `key` value. Never called when the slot is
+   * already cached.
    */
   private async fetchKeyValue(slotId: `0x${string}`): Promise<string> {
-    const wallet = this.getWallet();
+    // A slot whose rule this gateway holds needs no session: the rule is right here.
+    const held = this.slotRules.find(slotId);
+    if (held !== undefined) {
+      let query: DcqlQuery;
+      try {
+        query = JSON.parse(held) as DcqlQuery;
+      } catch {
+        throw ApiException.localized('internal_error', 'tasraRuleUnavailable', {
+          details: { reason: 'the configured slot rule is not a DCQL query' },
+        });
+      }
+      const pinned = extractKeyValue(query);
+      if (pinned === undefined) {
+        throw ApiException.localized('internal_error', 'tasraRuleUnavailable', {
+          details: { reason: 'the slot DCQL rule does not pin the key claim to a value' },
+        });
+      }
+      return pinned;
+    }
 
     let requestUri: string;
     try {
+      // A decrypt operation names a recipient and the slot's key epoch. The
+      // recipient is a throwaway: nothing is presented, so nothing is ever sealed to it.
+      // The epoch is read through the configured chain, the session is opened at the agent of
+      // the checked-in network manifest: they must describe the same network.
+      if (this.chain.describe().chainId !== this.deployment.chainId) {
+        throw new Error(
+          'the configured chain is not the network of the gateway manifest; list the slot in TASRA_SLOT_RULES_FILE',
+        );
+      }
+      const slot = await this.chain.getClient().readers.keyRegistry.getKeySlot(slotId);
+      const binding = decryptionBinding(
+        PLACEHOLDER_CONTENT_DIGEST,
+        Number(slot.epoch),
+        await createDecryptionRecipient(),
+      );
       const session = await openVerifierAgentSession({
         verifierAgentUrl: this.verifierAgentUrl,
-        signer: wallet.signer,
+        // A fresh random key per read: any key may open a session.
+        signer: createLocalWallet(this.deployment).signer,
         chainId: this.deployment.chainId,
         keyRegistry: this.deployment.addresses.KeyRegistry!,
         slotId,
         action: 'decrypt',
-        payloadDigest: DUMMY_DIGEST,
+        ...binding,
         description: 'Gateway reading slot DCQL rule for credential issuance',
       });
       requestUri = session.requestUri;
@@ -140,21 +186,6 @@ export class TasraDcqlService {
     }
 
     return keyValue;
-  }
-
-  /**
-   * Create a local wallet from `TASRA_CREATOR_SEED`, producing an EIP-712
-   * signer accepted by the slot's policy (as creator or delegate). Follows
-   * the same path as the reference script: `createLocalWallet` wraps a viem
-   * `LocalAccount` in a `WalletClient` whose `signTypedData` handles the
-   * `PresentationOperation` typed data exactly as the verifier expects.
-   */
-  private getWallet() {
-    const seed = this.config.tasra?.creatorSeed;
-    if (!seed) {
-      throw ApiException.localized('internal_error', 'tasraIssuerNotConfigured');
-    }
-    return createLocalWallet(this.deployment, { privateKey: seed as `0x${string}` });
   }
 }
 
